@@ -62,7 +62,10 @@ function SkillDetail() {
 
   return (
     <main className="flex-1 pb-10">
-      <header className="px-4 pb-4 pt-3 safe-top" style={{ background: meta.tint }}>
+      <header
+        className="px-4 pb-4 pt-3 safe-top md:px-6 md:pb-6"
+        style={{ background: meta.tint }}
+      >
         <div className="flex items-center gap-2">
           <Link
             href={`/browse/?pillar=${skill.pillar}`}
@@ -86,16 +89,19 @@ function SkillDetail() {
           >
             <SkillIcon name={skill.icon} size={26} />
           </span>
-          <h1 className="text-3xl font-bold leading-tight tracking-tight">
+          <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
             {skill.name}
           </h1>
         </div>
       </header>
 
+      {/* Tabs are a small-screen affordance. From lg there is room to show
+          coaching content and the rubric together, which is how a coach actually
+          uses them - reading the anchor while looking at what good looks like. */}
       <div
         role="tablist"
         aria-label="Skill view"
-        className="sticky top-0 z-30 flex border-b border-line bg-bg/95 backdrop-blur"
+        className="sticky top-0 z-30 flex border-b border-line bg-bg/95 backdrop-blur lg:hidden"
       >
         <TabButton active={tab === "coach"} onClick={() => setTab("coach")}>
           Coach it
@@ -105,11 +111,19 @@ function SkillDetail() {
         </TabButton>
       </div>
 
-      {tab === "coach" ? (
-        <CoachTab skill={skill} accent={meta.accent} />
-      ) : (
-        <AssessTab skill={skill} />
-      )}
+      {/*
+        Each panel is mounted exactly once and hidden with CSS rather than
+        rendered twice per breakpoint - two live copies of the Assess panel would
+        mean two copies of the evidence field's local state.
+      */}
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-8 lg:px-6 lg:pt-2">
+        <div className={tab === "coach" ? undefined : "hidden lg:block"}>
+          <CoachTab skill={skill} accent={meta.accent} />
+        </div>
+        <div className={tab === "assess" ? undefined : "hidden lg:block"}>
+          <AssessTab skill={skill} />
+        </div>
+      </div>
     </main>
   );
 }
@@ -142,7 +156,7 @@ function TabButton({
 
 function CoachTab({ skill, accent }: { skill: SubSkill; accent: string }) {
   return (
-    <div className="flex flex-col gap-6 px-4 pt-5">
+    <div className="flex flex-col gap-6 px-4 pt-5 lg:px-0">
       {/* The cue comes first and largest: it is the thing a coach says in the
           moment, and the most common reason for opening the app mid-practice. */}
       <section
@@ -219,7 +233,7 @@ function AssessTab({ skill }: { skill: SubSkill }) {
   const rating = existing?.rating ?? null;
 
   return (
-    <div className="flex flex-col gap-5 px-4 pt-5">
+    <div className="flex flex-col gap-5 px-4 pt-5 lg:px-0">
       <PlayerField />
       <ScoringRules />
 

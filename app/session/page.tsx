@@ -70,15 +70,17 @@ export default function SessionPage() {
   const empty = assessment.assessed === 0;
 
   return (
-    <main className="flex-1 px-4 pb-8 safe-top">
-      <header className="pt-3 pb-4">
-        <h1 className="text-3xl font-bold tracking-tight">Assessment</h1>
+    <main className="flex-1 px-4 pb-8 safe-top md:px-6 md:pb-12">
+      <header className="pt-3 pb-4 md:pt-8">
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Assessment</h1>
         <p className="text-sm text-muted">
-          Saved on this phone · nothing uploaded
+          Saved on this device · nothing uploaded
         </p>
       </header>
 
-      <PlayerField />
+      <div className="md:max-w-sm">
+        <PlayerField />
+      </div>
 
       {empty ? (
         <div className="mt-5 rounded-2xl border border-line bg-surface p-6 text-center">
@@ -100,12 +102,24 @@ export default function SessionPage() {
         </div>
       ) : (
         <>
-          <SummaryCard a={assessment} />
-          <PillarBreakdown a={assessment} />
-          <Priorities a={assessment} />
-          <RatedSkills a={assessment} onRemove={removeScore} />
+          {/*
+            Two wrappers rather than direct grid children: on phone they collapse
+            to a plain stack in exactly the existing order, and from lg they
+            become the two columns. The action bar stays full width underneath so
+            it does not float in the middle of the page on either layout.
+          */}
+          <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
+            <div>
+              <SummaryCard a={assessment} />
+              <PillarBreakdown a={assessment} />
+            </div>
+            <div>
+              <Priorities a={assessment} />
+              <RatedSkills a={assessment} onRemove={removeScore} />
+            </div>
+          </div>
 
-          <div className="mt-6 flex gap-2">
+          <div className="mt-6 flex gap-2 md:max-w-md">
             <button
               type="button"
               onClick={share}
@@ -123,8 +137,8 @@ export default function SessionPage() {
           </div>
 
           {confirmClear && (
-            <div className="mt-3 rounded-2xl border-2 border-developing bg-surface p-4">
-              <p className="font-semibold">Clear every assessment on this phone?</p>
+            <div className="mt-3 rounded-2xl border-2 border-developing bg-surface p-4 md:max-w-md">
+              <p className="font-semibold">Clear every assessment on this device?</p>
               <p className="mt-1 text-sm text-muted">
                 This removes all players, not just {assessment.playerLabel}. It
                 cannot be undone — export first if you want to keep it.
@@ -151,7 +165,7 @@ export default function SessionPage() {
             </div>
           )}
 
-          <p className="mt-6 text-center text-xs leading-relaxed text-muted">
+          <p className="mt-6 text-center text-xs leading-relaxed text-muted md:text-left">
             Averages summarise the current profile. They are not a talent grade or
             a selection ranking.
           </p>
@@ -219,7 +233,7 @@ function PillarBreakdown({ a }: { a: Assessment }) {
       <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
         By pillar
       </h2>
-      <ul className="flex flex-col gap-2.5">
+      <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
         {a.pillars.map((p) => {
           const meta = PILLAR_META[p.pillar];
           // Scale 1-4 across the bar; 1 is the floor, not zero.

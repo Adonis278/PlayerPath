@@ -32,15 +32,15 @@ function AllPillars() {
   const { content } = useContentDoc();
 
   return (
-    <main className="flex-1 px-4 pb-8 safe-top">
-      <header className="pt-3 pb-4">
-        <h1 className="text-3xl font-bold tracking-tight">Browse</h1>
+    <main className="flex-1 px-4 pb-8 safe-top md:px-6 md:pb-12">
+      <header className="pt-3 pb-4 md:pt-8">
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Browse</h1>
         <p className="text-sm text-muted">
           {content.subSkills.length} sub-skills across five pillars
         </p>
       </header>
 
-      <div className="flex flex-col gap-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {PILLARS.map((pillar) => {
           const meta = PILLAR_META[pillar];
           const skills = byPillar(content, pillar);
@@ -48,13 +48,13 @@ function AllPillars() {
             <Link
               key={pillar}
               href={`/browse/?pillar=${pillar}`}
-              className="relative flex h-28 flex-col justify-end overflow-hidden rounded-2xl border border-line p-4 active:opacity-90"
+              className="relative flex h-28 flex-col justify-end overflow-hidden rounded-2xl border border-line p-4 active:opacity-90 md:h-44"
             >
               <Image
                 src={meta.img}
                 alt=""
                 fill
-                sizes="(max-width: 512px) 100vw, 512px"
+                sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
                 className="object-cover"
               />
               <span
@@ -100,12 +100,12 @@ function PillarView({ pillar }: { pillar: Pillar }) {
 
   return (
     <main className="flex-1 pb-8">
-      <header className="relative h-40 overflow-hidden safe-top">
+      <header className="relative h-40 overflow-hidden safe-top md:h-56">
         <Image
           src={meta.img}
           alt=""
           fill
-          sizes="(max-width: 512px) 100vw, 512px"
+          sizes="(max-width: 767px) 100vw, 1024px"
           priority
           className="object-cover"
         />
@@ -126,19 +126,19 @@ function PillarView({ pillar }: { pillar: Pillar }) {
             <BackGlyph />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-white">{pillar}</h1>
+            <h1 className="text-2xl font-bold text-white md:text-4xl">{pillar}</h1>
             <p className="text-sm text-white/90">{meta.blurb}</p>
           </div>
         </div>
       </header>
 
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-4 md:px-6 md:pt-6">
         {player.trim() && (
           <p className="mb-2 text-sm text-muted">
             {rated} of {skills.length} assessed for {player.trim()}
           </p>
         )}
-        <ul className="flex flex-col gap-2">
+        <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
           {skills.map((s) => (
             <SkillRow
               key={s.id}

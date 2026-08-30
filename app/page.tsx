@@ -39,13 +39,18 @@ export default function HomePage() {
   const searching = query.trim().length > 0;
 
   return (
-    <main className="flex-1 px-4 pb-8 safe-top">
-      <header className="pt-3 pb-4">
-        <h1 className="text-3xl font-bold tracking-tight">PlayerPath</h1>
-        <p className="text-sm text-muted">Coaching and assessment, ages 9–12</p>
+    <main className="flex-1 px-4 pb-8 safe-top md:px-6 md:pb-12">
+      {/* The wordmark is in the side rail from md up, so drop it here to avoid
+          saying the product name twice on the same screen. */}
+      <header className="pt-3 pb-4 md:pt-8">
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <span className="md:hidden">PlayerPath</span>
+          <span className="hidden md:inline">Find a skill</span>
+        </h1>
+        <p className="text-sm text-muted">Coaching and assessment, ages 9-12</p>
       </header>
 
-      <div className="relative">
+      <div className="relative md:max-w-xl">
         <SearchGlyph />
         <input
           type="search"
@@ -78,7 +83,7 @@ export default function HomePage() {
               <h2 className="mb-2 text-sm font-semibold text-muted">
                 {results.length} {results.length === 1 ? "result" : "results"}
               </h2>
-              <ul className="flex flex-col gap-2">
+              <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {results.map((s) => (
                   <SkillRow key={s.id} skill={s} />
                 ))}
@@ -93,7 +98,7 @@ export default function HomePage() {
               <h2 className="mb-2 text-sm font-semibold text-muted">
                 Recently viewed
               </h2>
-              <ul className="flex flex-col gap-2">
+              <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {recents.slice(0, 3).map((s) => (
                   <SkillRow key={s.id} skill={s} />
                 ))}
@@ -105,7 +110,7 @@ export default function HomePage() {
             <h2 className="mb-3 text-sm font-semibold text-muted">
               Five development pillars
             </h2>
-            <ul className="grid grid-cols-2 gap-3">
+            <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
               {PILLARS.map((pillar, i) => {
                 const meta = PILLAR_META[pillar];
                 return (
@@ -113,17 +118,21 @@ export default function HomePage() {
                     key={pillar}
                     // The fifth tile spans the full width so the grid never
                     // leaves an orphan sitting awkwardly in one column.
-                    className={i === PILLARS.length - 1 ? "col-span-2" : undefined}
+                    // The fifth tile fills the orphan slot in the 2-column phone
+                    // grid, but must not span once there are 3 or 5 columns.
+                    className={
+                      i === PILLARS.length - 1 ? "col-span-2 md:col-span-1" : undefined
+                    }
                   >
                     <Link
                       href={`/browse/?pillar=${pillar}`}
-                      className="relative flex h-32 flex-col justify-end overflow-hidden rounded-2xl border border-line p-3 active:opacity-90"
+                      className="relative flex h-32 flex-col justify-end overflow-hidden rounded-2xl border border-line p-3 active:opacity-90 md:h-40"
                     >
                       <Image
                         src={meta.img}
                         alt=""
                         fill
-                        sizes="(max-width: 512px) 50vw, 256px"
+                        sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 20vw"
                         className="object-cover"
                       />
                       {/* Neutral scrim rather than an accent wash: a coloured

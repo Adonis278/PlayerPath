@@ -63,7 +63,7 @@ function Shell({
   right?: React.ReactNode;
 }) {
   return (
-    <main className="flex-1 px-4 pb-12 safe-top">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-12 safe-top md:px-6">
       <header className="flex items-center justify-between pt-3 pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
@@ -424,7 +424,7 @@ function SkillEditor({
     onChange({ ...skill, [key]: value });
 
   return (
-    <main className="flex-1 px-4 pb-12 safe-top">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-12 safe-top md:px-6">
       <header className="pt-3 pb-4">
         <button
           type="button"

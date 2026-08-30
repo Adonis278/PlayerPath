@@ -135,6 +135,14 @@ firebase deploy --only hosting
 
 ## Design notes
 
+**Responsive by layout, not by scaling.** A phone gets a single column and a
+bottom tab bar, because on a phone held one-handed the bottom third is the only
+reachable area. From `md` that becomes a left rail — a bottom bar on an iPad is
+both unreachable and a waste of the horizontal space that makes a tablet useful.
+From `lg` the skill screen drops its tabs entirely and shows coaching content and
+the rubric side by side, which is how a coach actually uses them: reading the
+anchor while looking at what good looks like.
+
 **Light theme only, on purpose.** The sports-app convention is dark surfaces, but
 NFR-2 requires legibility in direct daylight, where dark UIs lose — the screen
 emits less light and ambient reflection washes the surface out. Dark text on a
