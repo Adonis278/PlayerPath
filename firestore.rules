@@ -17,7 +17,7 @@ rules_version = '2';
  */
 function isOwner() {
   return request.auth != null && request.auth.uid in [
-    "REPLACE_WITH_OWNER_UID"
+    "QUGfij2lH5T6t3By0DGmoJC1j8M2" // test owner: owner-test@playerpath.local
   ];
 }
 
