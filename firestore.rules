@@ -1,0 +1,44 @@
+rules_version = '2';
+
+/*
+ * PlayerPath authorization.
+ *
+ * The Firebase web config in the client bundle is public by design; these rules
+ * are the actual security boundary. Read is open because coaching content is not
+ * secret and coaches never sign in. Write is restricted to named owner accounts.
+ *
+ * NOTE: `request.auth != null` would NOT be safe here. With the email/password
+ * provider enabled, anyone can create an account from the client SDK and would
+ * then satisfy it. Hence an explicit UID allowlist.
+ *
+ * To add an owner: create the user in Firebase Console -> Authentication, copy
+ * their UID, add it below, and redeploy with `firebase deploy --only firestore:rules`.
+ * Also turn OFF self-signup in Authentication -> Settings -> User actions.
+ */
+function isOwner() {
+  return request.auth != null && request.auth.uid in [
+    "REPLACE_WITH_OWNER_UID"
+  ];
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Coaching content. World-readable, owner-writable.
+    match /content/{document} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // Version history for one-tap revert after a bad edit.
+    match /content_versions/{version} {
+      allow read: if isOwner();
+      allow write: if isOwner();
+    }
+
+    // Nothing else is reachable.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,26 +1,99 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * PlayerPath design system.
+ *
+ * Deliberately light-only. The sports-app convention is dark surfaces, but NFR-2
+ * requires legibility in direct daylight, where dark UIs lose: the screen emits
+ * less light and ambient reflection washes the surface out. Dark text on a bright
+ * background is the readable choice outdoors, so there is no dark-mode variant.
+ */
+
+/*
+ * `static` matters here. Tailwind v4 drops theme variables no utility class
+ * references, and the pillar and level colours are applied through inline
+ * `var(--color-*)` styles that the scanner cannot see. Without static they get
+ * purged and those elements render invisible.
+ */
+@theme static {
+  /* Surfaces */
+  --color-bg: #ffffff;
+  --color-surface: #f6f7f9;
+  --color-line: #e3e6ec;
+
+  /* Ink - body text hits ~17:1 on white */
+  --color-ink: #0b0f19;
+  --color-muted: #59637a;
+
+  --color-brand: #0f7a4a;
+  --color-brand-dark: #0a5c37;
+
+  /* Pillars */
+  --color-technical: #1d4ed8;
+  --color-tactical: #7c3aed;
+  --color-physical: #c2410c;
+  --color-mental: #047857;
+  --color-social: #b45309;
+
+  /*
+   * Rubric levels. Deliberately not a red-to-green scale: red on a 10-year-old's
+   * skill reads as a judgement on the child. Neutral slate rising to green reads
+   * as a journey instead, while still being an obvious progression.
+   */
+  --color-emerging: #64748b;
+  --color-developing: #d97706;
+  --color-consistent: #0284c7;
+  --color-advanced: #047857;
+
+  --radius-card: 1rem;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  height: 100%;
+  /* Stop iOS inflating text when the phone is rotated on the sideline. */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  /* 17px base - the floor for comfortable outdoor reading. */
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  /* Never bounce-scroll the shell; inner regions scroll instead. */
+  overscroll-behavior-y: none;
+}
+
+/* Kill the 300ms tap delay and the grey flash on tap. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
+/* Respect the notch and the home indicator. */
+.safe-bottom {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+.safe-top {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
