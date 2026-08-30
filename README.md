@@ -179,6 +179,22 @@ afterwards, off the critical path (NFR-1).
 - **Not built, per BRD §1.5:** accounts, cross-session player history,
   parent/player views, session-plan generation.
 
+## A note on the xlsx dependency
+
+`xlsx` (SheetJS) is installed from **`cdn.sheetjs.com`, not npm**. SheetJS stopped
+publishing to npm at 0.18.5, and that stale version carries two high-severity
+advisories (prototype pollution, ReDoS) that npm reports as "no fix available" —
+because the fix lives on the vendor's own registry. Installing from there gives
+0.20.3 and a clean `npm audit`.
+
+The practical exposure was low either way: the parser is lazily loaded on the
+admin route only, never reaches a coach's device, and only ever parses a file the
+signed-in owner picked themselves. But an unpatched advisory on the default branch
+is not worth carrying when the vendor ships a fix.
+
+If a CI environment cannot reach `cdn.sheetjs.com`, that install will fail — this
+is the one dependency not resolvable from the npm registry alone.
+
 ## Photography
 
 Stock photography from [Pexels](https://www.pexels.com), free to use under the
