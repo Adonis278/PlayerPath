@@ -9,16 +9,34 @@ Built against `PlayerPath_BRD_Revised_v1.1.docx`.
 
 ## What it does
 
-Five development pillars → 21 sub-skills. Each sub-skill carries coaching content
-(a cue, what good looks like, 2–3 activities, three problem→fix pairs) and a
-four-level rubric (Emerging / Developing / Consistent / Advanced).
+Five development pillars → 21 sub-skills. Each carries coaching content (a cue,
+what good looks like, activities, three ways to improve) and four skill-specific
+rubric anchors (Emerging / Developing / Consistent / Advanced).
 
-A coach watches a player, opens the sub-skill, reads four descriptions of
-observable behaviour, and taps the one that matches. **The coach is the
-measurement instrument** — there is no video, no computer vision, and no automated
-scoring anywhere in this product.
+**The coach is the measurement instrument.** They watch a player, read four
+descriptions of observable behaviour, and tap the one that matches. There is no
+video, no computer vision, and no automated scoring anywhere in this product.
 
-Scores are saved on the coach's own phone and are never uploaded.
+### The assessment workflow
+
+From the workbook's Scoring Framework, implemented end to end:
+
+1. Observe the skill in a game or representative activity
+2. Rate 1–4 against the skill-specific anchors — **or leave it blank**
+3. Record one brief piece of evidence
+4. Set a priority: High / Medium / Maintain
+5. Reassess after the development block
+
+Two rules from that sheet shape the code, not just the copy:
+
+- **No forced score.** Not-observed is a real state, reachable in one tap, and
+  clearing a rating deletes the record rather than storing a zero — otherwise
+  unobserved skills would drag every average down.
+- **Development, not ranking.** Averages band conservatively: an exact tie such
+  as 2.5 rounds *down*, because the framework says a 3 or 4 should be seen
+  repeatedly. The profile is never presented as a talent grade.
+
+Everything a coach records stays on their own phone and is never uploaded.
 
 ## Stack
 
@@ -84,18 +102,28 @@ Sign in at `/admin`:
 
 - **Edit any sub-skill** in a form — cue, description, activities, improvements
   and all four rubric levels.
-- **Import a spreadsheet** — a workbook with `Skills` and `Rubric` sheets, joined
-  on pillar + sub-skill. Column names are matched loosely (`sub_skill`,
-  `Sub Skill`, `SubSkill` all work).
+- **Import a spreadsheet** — a workbook with `Skills` and `Scoring Framework`
+  sheets, joined on pillar + sub-skill. Column names are matched loosely
+  (`sub_skill`, `Sub-skill`, `SubSkill` all work), and the anchor table is found
+  wherever it starts on the Scoring Framework sheet.
 - **Publish** — blocked while any validation issue is outstanding.
 
 Every save writes a version snapshot, keeping the last 10 for rollback.
+
+### Regenerating the baked content
+
+```bash
+node scripts/import-workbook.mjs path/to/coach_skills_with_player_scoring_framework.xlsx
+```
+
+Rewrites `lib/seed-content.ts`, the offline fallback compiled into the bundle.
+Day-to-day edits should go through the admin editor instead.
 
 ### Validation
 
 `lib/validate.ts` enforces the BRD's §3.3.3 data-quality rules on both import and
 save: stable unique ids, all required fields present, 2–3 activities, exactly 3
-problem→fix pairs, all four rubric levels present and mutually distinct, and no
+ways to improve, all four rubric anchors present and mutually distinct, and no
 orphaned rubric rows. This is acceptance criterion **AC-10**, automated.
 
 ## Deploying
@@ -130,12 +158,16 @@ afterwards, off the critical path (NFR-1).
 
 ## Known gaps
 
-- **Content is placeholder.** `lib/seed-content.ts` is a working draft written to
-  the correct structure and rubric calibration, pending
-  `coach_skills_technical.xlsx` from the product owner.
-- **Onboarding is undecided.** Calibration guidance (the ages 9–12 framing and the
-  between-two-levels tie-breaker) is inline on the Assess tab. A fuller first-run
-  intro and the home-screen install prompt are still open decisions.
+- **Onboarding is undecided.** The scoring rules are inline on the Assess tab
+  under "How to score this". A fuller first-run intro and the home-screen install
+  prompt are still open decisions.
+- **Player metadata is minimal by choice.** The workbook's assessment sheet has
+  fields for name, age group, position and dominant foot. The app stores only a
+  free-text label and suggests a jersey number, since less identifying data about
+  a child on a phone is better. Easy to extend if the pilot needs it.
+- **One assessment per player.** Re-rating replaces the previous value. The
+  workbook's "reassess after the development block" step implies history, which
+  is Phase 3 (BRD §1.5 excludes longitudinal tracking from v1).
 - **Not built, per BRD §1.5:** accounts, cross-session player history,
   parent/player views, session-plan generation.
 

@@ -4,14 +4,21 @@ import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useContentDoc } from "@/components/ContentProvider";
+import { SkillIcon } from "@/components/SkillIcon";
+import { PlayerField } from "@/components/PlayerField";
 import { findSubSkill } from "@/lib/content";
 import { pushRecent } from "@/lib/recents";
-import { addScore, scoreStore } from "@/lib/scores";
+import { currentPlayerStore } from "@/lib/current-player";
+import { clearRating, scoreFor, scoreStore, upsertScore } from "@/lib/scores";
 import {
   LEVELS,
   LEVEL_META,
   PILLAR_META,
-  type LevelValue,
+  PRIORITIES,
+  PRIORITY_META,
+  SCORING_RULES,
+  type Priority,
+  type Rating,
   type SubSkill,
 } from "@/lib/types";
 
@@ -55,10 +62,7 @@ function SkillDetail() {
 
   return (
     <main className="flex-1 pb-10">
-      <header
-        className="px-4 pb-4 pt-3 safe-top"
-        style={{ background: meta.tint }}
-      >
+      <header className="px-4 pb-4 pt-3 safe-top" style={{ background: meta.tint }}>
         <div className="flex items-center gap-2">
           <Link
             href={`/browse/?pillar=${skill.pillar}`}
@@ -75,9 +79,17 @@ function SkillDetail() {
             {skill.pillar}
           </span>
         </div>
-        <h1 className="mt-2 text-3xl font-bold leading-tight tracking-tight">
-          {skill.name}
-        </h1>
+        <div className="mt-2 flex items-center gap-3">
+          <span
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-bg"
+            style={{ color: meta.accent }}
+          >
+            <SkillIcon name={skill.icon} size={26} />
+          </span>
+          <h1 className="text-3xl font-bold leading-tight tracking-tight">
+            {skill.name}
+          </h1>
+        </div>
       </header>
 
       <div
@@ -117,7 +129,7 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`h-13 flex-1 border-b-[3px] py-3.5 text-base font-semibold transition-colors ${
+      className={`flex-1 border-b-[3px] py-3.5 text-base font-semibold transition-colors ${
         active ? "border-brand text-ink" : "border-transparent text-muted"
       }`}
     >
@@ -131,7 +143,7 @@ function TabButton({
 function CoachTab({ skill, accent }: { skill: SubSkill; accent: string }) {
   return (
     <div className="flex flex-col gap-6 px-4 pt-5">
-      {/* The cue comes first and largest: it is the thing a coach shouts in the
+      {/* The cue comes first and largest: it is the thing a coach says in the
           moment, and the most common reason for opening the app mid-practice. */}
       <section
         className="rounded-2xl px-4 py-4 text-white"
@@ -151,9 +163,23 @@ function CoachTab({ skill, accent }: { skill: SubSkill; accent: string }) {
       </section>
 
       <section>
-        <SectionTitle>Practice activities</SectionTitle>
-        <ul className="flex flex-col gap-2">
+        <SectionTitle>Activities</SectionTitle>
+        <ul className="flex flex-wrap gap-2">
           {skill.activities.map((a, i) => (
+            <li
+              key={i}
+              className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm"
+            >
+              {a}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <SectionTitle>Ways to improve</SectionTitle>
+        <ul className="flex flex-col gap-2">
+          {skill.waysToImprove.map((w, i) => (
             <li
               key={i}
               className="flex gap-3 rounded-2xl border border-line bg-surface p-3"
@@ -164,23 +190,7 @@ function CoachTab({ skill, accent }: { skill: SubSkill; accent: string }) {
               >
                 {i + 1}
               </span>
-              <span className="text-[0.95rem]">{a}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section>
-        <SectionTitle>Three ways to improve</SectionTitle>
-        <ul className="flex flex-col gap-3">
-          {skill.waysToImprove.map((w, i) => (
-            <li key={i} className="rounded-2xl border border-line p-3">
-              <p className="text-sm font-semibold text-muted">If you see</p>
-              <p className="mt-0.5">{w.problem}</p>
-              <p className="mt-2.5 text-sm font-semibold" style={{ color: accent }}>
-                Try
-              </p>
-              <p className="mt-0.5">{w.fix}</p>
+              <span className="text-[0.95rem] leading-relaxed">{w}</span>
             </li>
           ))}
         </ul>
@@ -192,129 +202,216 @@ function CoachTab({ skill, accent }: { skill: SubSkill; accent: string }) {
 /* ---------------- Assess ---------------- */
 
 function AssessTab({ skill }: { skill: SubSkill }) {
-  const [player, setPlayer] = useState("");
-  /*
-   * The selected level is derived from the score store rather than mirrored into
-   * local state, so switching skill or player needs no effect to resynchronise -
-   * the right answer simply falls out of the current render.
-   */
+  const player = useSyncExternalStore(
+    currentPlayerStore.subscribe,
+    currentPlayerStore.getSnapshot,
+    currentPlayerStore.getServerSnapshot,
+  );
   const scores = useSyncExternalStore(
     scoreStore.subscribe,
     scoreStore.getSnapshot,
     scoreStore.getServerSnapshot,
   );
 
-  const label = player.trim() || undefined;
-  const key = `${skill.id}|${label ?? ""}`;
-  const selected =
-    scores.find((s) => s.subSkillId === skill.id && s.playerLabel === label)
-      ?.level ?? null;
-
-  // Show the confirmation only for the row the coach just tapped.
-  const [savedKey, setSavedKey] = useState<string | null>(null);
-  const saved = savedKey === key;
-
-  function choose(level: LevelValue) {
-    addScore(skill.id, level, player);
-    setSavedKey(key);
-  }
+  // Derived from the store, so switching skill or player needs no effect to
+  // resynchronise - the right answer falls out of the current render.
+  const existing = scoreFor(scores, skill.id, player);
+  const rating = existing?.rating ?? null;
 
   return (
-    <div className="flex flex-col gap-4 px-4 pt-5">
-      <details className="rounded-2xl border border-line bg-surface p-3">
-        <summary className="cursor-pointer text-sm font-semibold">
-          How to score this
-        </summary>
-        <div className="mt-2 flex flex-col gap-2 text-sm text-ink/90">
-          {/* The single most common scoring error is anchoring on adult football.
-              Saying this out loud is the cheapest defence against risk R-2. */}
-          <p>
-            Every level is written for <strong>ages 9–12</strong>. “Advanced”
-            means advanced for a 10-year-old, not advanced for a professional.
-          </p>
-          <p>
-            Score what you have seen <strong>across this session</strong>, not one
-            moment. If a player sits between two levels, choose the lower one
-            unless you have seen the higher hold up repeatedly.
-          </p>
-        </div>
-      </details>
+    <div className="flex flex-col gap-5 px-4 pt-5">
+      <PlayerField />
+      <ScoringRules />
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold">
-          Player{" "}
-          <span className="font-normal text-muted">
-            — optional, jersey number is enough
+      <section>
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
+          Rating
+        </h2>
+        <ul className="flex flex-col gap-2.5">
+          {LEVELS.map((key, i) => {
+            const value = (i + 1) as Rating;
+            const info = LEVEL_META[value];
+            const active = rating === value;
+            const colour = `var(--color-${key})`;
+
+            return (
+              <li key={key}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    upsertScore({
+                      subSkillId: skill.id,
+                      rating: value,
+                      evidence: existing?.evidence,
+                      priority: existing?.priority,
+                      playerLabel: player,
+                    })
+                  }
+                  aria-pressed={active}
+                  className="w-full rounded-2xl border-2 p-3.5 text-left"
+                  style={{
+                    borderColor: active ? colour : "var(--color-line)",
+                    background: active ? `${colour}14` : "var(--color-bg)",
+                  }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                      style={{ background: colour }}
+                    >
+                      {value}
+                    </span>
+                    <span className="font-bold" style={{ color: colour }}>
+                      {info.label}
+                    </span>
+                    {active && (
+                      <span
+                        className="ml-auto text-sm font-semibold"
+                        style={{ color: colour }}
+                      >
+                        Selected
+                      </span>
+                    )}
+                  </span>
+                  {/* The skill-specific anchor, not just the level label (FR-5). */}
+                  <span className="mt-2 block text-[0.95rem] leading-relaxed text-ink/90">
+                    {skill.rubric[key]}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/*
+          "No forced score" is an explicit rule in the workbook, so not-observed
+          must be reachable in one tap rather than only by never touching the
+          screen. Clearing removes the record so it cannot drag averages down.
+        */}
+        <button
+          type="button"
+          onClick={() => clearRating(skill.id, player)}
+          disabled={rating === null}
+          className="mt-2.5 h-12 w-full rounded-2xl border-2 border-dashed border-line text-sm font-semibold text-muted disabled:opacity-50"
+        >
+          {rating === null ? "Not observed yet" : "Clear rating — not observed"}
+        </button>
+      </section>
+
+      {existing && (
+        <EvidenceAndPriority skill={skill} player={player} existing={existing} />
+      )}
+    </div>
+  );
+}
+
+function EvidenceAndPriority({
+  skill,
+  player,
+  existing,
+}: {
+  skill: SubSkill;
+  player: string;
+  existing: { rating: Rating; evidence?: string; priority?: Priority };
+}) {
+  const [evidence, setEvidence] = useState(existing.evidence ?? "");
+
+  // Keep the textarea in step when the coach switches player or skill, without
+  // an effect: adjust during render when the identity key changes.
+  const key = `${skill.id}|${player}`;
+  const [lastKey, setLastKey] = useState(key);
+  if (lastKey !== key) {
+    setLastKey(key);
+    setEvidence(existing.evidence ?? "");
+  }
+
+  const save = (patch: { evidence?: string; priority?: Priority }) =>
+    upsertScore({
+      subSkillId: skill.id,
+      rating: existing.rating,
+      evidence: "evidence" in patch ? patch.evidence : evidence,
+      priority: "priority" in patch ? patch.priority : existing.priority,
+      playerLabel: player,
+    });
+
+  return (
+    <>
+      <section>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm font-bold uppercase tracking-wide text-muted">
+            Evidence
           </span>
-        </span>
-        <input
-          value={player}
-          onChange={(e) => setPlayer(e.target.value)}
-          placeholder="e.g. 7"
-          inputMode="text"
-          autoComplete="off"
-          className="h-12 rounded-xl border-2 border-line bg-surface px-3 outline-none focus:border-brand focus:bg-bg"
-        />
-      </label>
+          <span className="-mt-1 text-sm text-muted">
+            One brief thing you actually saw.
+          </span>
+          <textarea
+            rows={3}
+            value={evidence}
+            onChange={(e) => setEvidence(e.target.value)}
+            onBlur={() => save({ evidence })}
+            placeholder="e.g. Took two touches away from pressure twice in the 4v4"
+            className="rounded-xl border-2 border-line bg-surface p-3 text-[0.95rem] outline-none focus:border-brand focus:bg-bg"
+          />
+        </label>
+      </section>
 
-      <ul className="flex flex-col gap-2.5">
-        {LEVELS.map((key, i) => {
-          const value = (i + 1) as LevelValue;
-          const info = LEVEL_META[value];
-          const active = selected === value;
-          const colour = `var(--color-${key})`;
-
-          return (
-            <li key={key}>
+      <section>
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
+          Priority
+        </h2>
+        <div className="flex gap-2">
+          {PRIORITIES.map((p) => {
+            const active = existing.priority === p;
+            const meta = PRIORITY_META[p];
+            return (
               <button
+                key={p}
                 type="button"
-                onClick={() => choose(value)}
+                onClick={() => save({ priority: active ? undefined : p })}
                 aria-pressed={active}
-                className="w-full rounded-2xl border-2 p-3.5 text-left transition-colors active:scale-[0.995]"
+                className="h-12 flex-1 rounded-xl border-2 text-sm font-bold"
                 style={{
-                  borderColor: active ? colour : "var(--color-line)",
-                  background: active ? `${colour}14` : "var(--color-bg)",
+                  borderColor: active ? meta.colour : "var(--color-line)",
+                  background: active ? meta.colour : "var(--color-bg)",
+                  color: active ? "#fff" : "var(--color-muted)",
                 }}
               >
-                <span className="flex items-center gap-2">
-                  <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                    style={{ background: colour }}
-                  >
-                    {value}
-                  </span>
-                  <span className="font-bold" style={{ color: colour }}>
-                    {info.label}
-                  </span>
-                  {active && (
-                    <span className="ml-auto text-sm font-semibold" style={{ color: colour }}>
-                      Selected
-                    </span>
-                  )}
-                </span>
-                {/* FR-5: the observable criteria, not just the label. */}
-                <span className="mt-2 block text-[0.95rem] leading-relaxed text-ink/90">
-                  {skill.rubric[key]}
-                </span>
+                {meta.label}
               </button>
-            </li>
-          );
-        })}
-      </ul>
+            );
+          })}
+        </div>
+      </section>
 
-      <div aria-live="polite" className="min-h-12">
-        {saved && selected && (
-          <div className="flex items-center justify-between rounded-2xl bg-surface p-3">
-            <p className="text-sm">
-              Saved{player.trim() ? ` for ${player.trim()}` : ""} on this phone.
-            </p>
-            <Link href="/session/" className="text-sm font-bold text-brand">
-              View session
-            </Link>
+      <Link
+        href="/session/"
+        className="flex h-12 items-center justify-center rounded-xl bg-brand font-semibold text-white"
+      >
+        View assessment
+      </Link>
+    </>
+  );
+}
+
+function ScoringRules() {
+  return (
+    <details className="rounded-2xl border border-line bg-surface p-3">
+      <summary className="cursor-pointer text-sm font-semibold">
+        How to score this
+      </summary>
+      <div className="mt-3 flex flex-col gap-3">
+        <p className="text-sm text-ink/90">
+          Score observed football behaviour — not personality, potential, or
+          comparison with other children.
+        </p>
+        {SCORING_RULES.map((r) => (
+          <div key={r.title}>
+            <p className="text-sm font-bold">{r.title}</p>
+            <p className="text-sm text-ink/90">{r.body}</p>
           </div>
-        )}
+        ))}
       </div>
-    </div>
+    </details>
   );
 }
 

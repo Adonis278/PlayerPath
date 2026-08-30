@@ -26,9 +26,7 @@ function scoreSkill(skill: SubSkill, terms: string[]): number {
   const pillar = normalise(skill.pillar);
   const cue = normalise(skill.coachingCue);
   const body = normalise(
-    `${skill.description} ${skill.activities.join(" ")} ${skill.waysToImprove
-      .map((w) => `${w.problem} ${w.fix}`)
-      .join(" ")}`,
+    `${skill.description} ${skill.activities.join(" ")} ${skill.waysToImprove.join(" ")}`,
   );
 
   let total = 0;

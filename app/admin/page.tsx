@@ -456,6 +456,14 @@ function SkillEditor({
           />
         </Field>
 
+        <Field label="Icon" hint="Tabler icon name, e.g. arrow-back-up">
+          <input
+            value={skill.icon}
+            onChange={(e) => set("icon", e.target.value)}
+            className="h-12 w-full rounded-xl border-2 border-line bg-surface px-3 font-mono text-sm outline-none focus:border-brand focus:bg-bg"
+          />
+        </Field>
+
         <Field label="What good looks like" hint="At ages 9–12 specifically">
           <textarea
             rows={4}
@@ -479,42 +487,26 @@ function SkillEditor({
           />
         </Field>
 
-        <div>
-          <p className="text-sm font-semibold">Three ways to improve</p>
-          <div className="mt-2 flex flex-col gap-3">
-            {[0, 1, 2].map((i) => {
-              const way = skill.waysToImprove[i] ?? { problem: "", fix: "" };
-              const update = (patch: Partial<typeof way>) => {
-                const next = [...skill.waysToImprove];
-                while (next.length < 3) next.push({ problem: "", fix: "" });
-                next[i] = { ...way, ...patch };
-                set("waysToImprove", next);
-              };
-              return (
-                <div key={i} className="rounded-xl border border-line p-3">
-                  <input
-                    placeholder={`If you see… (${i + 1})`}
-                    value={way.problem}
-                    onChange={(e) => update({ problem: e.target.value })}
-                    className="h-11 w-full rounded-lg border-2 border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:bg-bg"
-                  />
-                  <input
-                    placeholder="Try…"
-                    value={way.fix}
-                    onChange={(e) => update({ fix: e.target.value })}
-                    className="mt-2 h-11 w-full rounded-lg border-2 border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:bg-bg"
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <Field label="Ways to improve" hint="One per line, exactly 3">
+          <textarea
+            rows={5}
+            value={skill.waysToImprove.join("\n")}
+            onChange={(e) =>
+              set(
+                "waysToImprove",
+                e.target.value.split("\n").map((s) => s.trim()).filter(Boolean),
+              )
+            }
+            className="w-full rounded-xl border-2 border-line bg-surface p-3 font-mono text-sm outline-none focus:border-brand focus:bg-bg"
+          />
+        </Field>
 
         <div>
           <p className="text-sm font-semibold">Rubric</p>
           <p className="mb-2 text-sm text-muted">
-            Keep the through-line: not yet → unpressured → moving → under match
-            pressure. Describe what you would see, not how good it is.
+            Keep the through-line: rarely → controlled situations only →
+            regularly in game-realistic play → repeated under high pressure.
+            Describe what you would see, not how good it is.
           </p>
           <div className="flex flex-col gap-3">
             {LEVELS.map((level, i) => (

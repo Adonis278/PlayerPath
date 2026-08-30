@@ -39,6 +39,9 @@ export function validateSubSkill(s: SubSkill): Issue[] {
   if (blank(s.coachingCue)) {
     issues.push({ where, field: "coachingCue", message: "Missing coaching cue" });
   }
+  if (blank(s.icon)) {
+    issues.push({ where, field: "icon", message: "Missing icon name" });
+  }
 
   const activities = Array.isArray(s.activities) ? s.activities.filter((a) => !blank(a)) : [];
   if (activities.length < 2 || activities.length > 3) {
@@ -49,13 +52,14 @@ export function validateSubSkill(s: SubSkill): Issue[] {
     });
   }
 
-  const ways = Array.isArray(s.waysToImprove) ? s.waysToImprove : [];
-  const completeWays = ways.filter((w) => w && !blank(w.problem) && !blank(w.fix));
-  if (completeWays.length !== 3) {
+  const ways = Array.isArray(s.waysToImprove)
+    ? s.waysToImprove.filter((w) => !blank(w))
+    : [];
+  if (ways.length !== 3) {
     issues.push({
       where,
       field: "waysToImprove",
-      message: `Needs exactly 3 complete problem/fix pairs, found ${completeWays.length}`,
+      message: `Needs exactly 3 ways to improve, found ${ways.length}`,
     });
   }
 

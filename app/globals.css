@@ -45,6 +45,11 @@
   --color-consistent: #0284c7;
   --color-advanced: #047857;
 
+  /* Development priority (workflow step 4). */
+  --color-priority-high: #be123c;
+  --color-priority-medium: #b45309;
+  --color-priority-maintain: #0f766e;
+
   --radius-card: 1rem;
 
   --font-sans:

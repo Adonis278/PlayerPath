@@ -12,7 +12,7 @@ import { usePathname } from "next/navigation";
 const ITEMS = [
   { href: "/", label: "Find", icon: SearchIcon },
   { href: "/browse", label: "Browse", icon: GridIcon },
-  { href: "/session", label: "Session", icon: ClipboardIcon },
+  { href: "/session", label: "Assess", icon: ClipboardIcon },
 ] as const;
 
 export function BottomNav() {

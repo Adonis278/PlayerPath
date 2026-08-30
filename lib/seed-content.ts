@@ -1,16 +1,13 @@
 import type { ContentDoc, SubSkill } from "./types";
 
 /**
- * PLACEHOLDER CONTENT - pending coach_skills_technical.xlsx from the product owner.
- * The structure and rubric calibration are final; the wording is a working draft so
- * the app is demonstrable. Replace wholesale via Admin -> Import.
+ * Content from coach_skills_with_player_scoring_framework.xlsx (product owner).
  *
- * Rubric through-line, held constant across all 21 sub-skills so coaches calibrate:
- *   Emerging   - not yet
- *   Developing - can do it unpressured / standing still
- *   Consistent - reliable while moving, low pressure
- *   Advanced   - holds up under real match pressure
- * Every level is written for ages 9-12. Advanced means advanced for a 10-year-old.
+ * Skills sheet -> coaching content; Scoring Framework sheet -> the four rubric
+ * anchors per sub-skill, joined on pillar + sub-skill.
+ *
+ * Regenerate with: node scripts/import-workbook.mjs <file.xlsx>
+ * Do not hand-edit - edits belong in the workbook or the in-app admin editor.
  */
 
 const TECHNICAL: SubSkill[] = [
@@ -18,185 +15,144 @@ const TECHNICAL: SubSkill[] = [
     id: "technical.first-touch",
     pillar: "Technical",
     name: "First touch",
+    icon: "arrow-back-up",
     description:
-      "The first contact sets up everything that follows. At this age, good means the ball ends up out of the feet, in front of the player, and moving where they want to go next.",
+      "Takes the ball out of the air or off the ground into space away from pressure, on both feet.",
     activities: [
-      "Wall passes, two touches only: control then return, 2 minutes each foot",
-      "Toss-and-control in pairs, receiving out of the air from a gentle underarm throw",
-      "Four-cone diamond: receive facing one cone, take the first touch toward another",
+      "Rondos with limited touches",
+      "gate receiving",
+      "receive-turn-play combos",
     ],
-    coachingCue: "First touch out of your feet",
+    coachingCue: "Check your shoulder before it arrives",
     waysToImprove: [
-      {
-        problem: "Ball bounces off the shin or gets stuck under the body",
-        fix: "Ask for a relaxed ankle and a cushioned contact. Meet the ball, do not fight it",
-      },
-      {
-        problem: "Controls it but stops dead and gets closed down",
-        fix: "Set a rule that the first touch must travel at least a metre into space",
-      },
-      {
-        problem: "Only ever controls with the same foot",
-        fix: "Call out the receiving foot before the ball arrives",
-      },
+      "Wall cushion reps - rebound at varying heights/speeds, cushion dead, alternate feet",
+      "Scan-and-turn rondo - bonus point for receiving on the half-turn",
+      "Forced weak-foot small-sided games - first touch must be on weak foot to score",
     ],
     rubric: {
       emerging:
-        "The ball regularly bounces away on contact. The player has to chase their own first touch, or possession is lost.",
+        "Frequently loses control or stops the ball under the body; often needs extra touches even without pressure.",
       developing:
-        "Controls a gently rolled ball while standing still, but the touch is heavy when moving or when the pass has pace on it.",
+        "Controls simple service but directional touch is inconsistent; pace, aerial balls or pressure often disrupt the next action.",
       consistent:
-        "Controls the ball while jogging and sets it into space in the direction they intend, in unopposed or low-pressure practice.",
+        "First touch usually moves the ball into useful space and supports the next action under realistic pressure.",
       advanced:
-        "Controls the ball cleanly in a game with a defender nearby, and the first touch takes them away from the pressure.",
+        "Manipulates the first touch intentionally to escape pressure or create advantage using different surfaces, feet and types of service.",
     },
   },
   {
     id: "technical.passing",
     pillar: "Technical",
     name: "Passing",
+    icon: "arrows-right-left",
     description:
-      "Getting the ball to a teammate with the right weight and the right foot. At 9-12, accuracy over ten metres matters far more than distance.",
+      "Accurate weight on both feet, played to the teammate's correct foot, early disguise emerging.",
     activities: [
-      "Gates: pairs pass through a 1m cone gate, one point per clean pass, 90 seconds",
-      "Triangle passing, calling the receiver's name before striking the ball",
-      "Two-touch rondo, four attackers and one defender in a 6m square",
+      "4v2 and 5v2 rondos",
+      "passing patterns under light pressure",
+      "pass-and-move small-sided games",
     ],
-    coachingCue: "Head up, then pass",
+    coachingCue: "Which foot does your teammate need it on?",
     waysToImprove: [
-      {
-        problem: "Passes are underhit and get intercepted",
-        fix: "Contact with the inside of the foot and follow through toward the target",
-      },
-      {
-        problem: "Passes without looking and loses possession",
-        fix: "Require a look before every reception. Call it the check-your-shoulder rule",
-      },
-      {
-        problem: "Only ever passes to the nearest teammate",
-        fix: "Award two points for a pass that breaks a line of defenders",
-      },
+      "Target-gate passing - pass through small gates to a moving partner, rewards accuracy over power",
+      "Both-feet rondo - possession game where a pass off the weak foot counts double",
+      "One-touch progression - start two-touch, progress to one-touch as control improves, forces early decision-making",
     ],
     rubric: {
       emerging:
-        "Struggles to make firm contact. Passes go wide of a stationary target from short distance.",
+        "Short-pass technique and accuracy are inconsistent; weight is often wrong and play is heavily dependent on one foot.",
       developing:
-        "Passes accurately to a stationary teammate from a standing start, but weight and direction fall apart on the move.",
+        "Completes simple passes with time, but weight, correct-foot selection and weak-foot use become inconsistent under pressure.",
       consistent:
-        "Finds a moving teammate over ten metres with sensible weight during drills and small-sided play.",
+        "Delivers accurate, appropriately weighted passes to useful areas/feet with both feet in most game situations.",
       advanced:
-        "Picks the right pass under pressure in a game, varies the weight to suit, and uses both feet when the situation calls for it.",
+        "Varies weight, angle, tempo and range intelligently; consistently finds line-breaking or advantage-creating passes under pressure.",
     },
   },
   {
     id: "technical.dribbling",
     pillar: "Technical",
     name: "Dribbling",
+    icon: "run",
     description:
-      "Carrying the ball under control with the head up. The measure at this age is whether they can keep the ball close while changing pace and direction.",
+      "Used with purpose, to beat a player or escape pressure, on both feet, not for its own sake.",
     activities: [
-      "Cone slalom with the ball, both feet, timed but accuracy first",
-      "Sharks and minnows in a 20m box, last player with a ball wins",
-      "1v1 to a line: attacker scores by dribbling over it, 60-second rounds",
+      "1v1s in small grids",
+      "dribble-through-gates",
+      "small-sided games with a beat-your-player bonus",
     ],
-    coachingCue: "Small touches, head up",
+    coachingCue: "Attack when you have space, pass when you don't",
     waysToImprove: [
-      {
-        problem: "Ball runs too far ahead and is easily taken",
-        fix: "Set a rule of one touch every second step inside a tight grid",
-      },
-      {
-        problem: "Stares at the ball and misses everything around them",
-        fix: "Hold up fingers across the grid and ask them to call the number while dribbling",
-      },
-      {
-        problem: "Only dribbles in straight lines",
-        fix: "Add a change of direction on a whistle, then let them choose the moment",
-      },
+      "1v1 grid battles - small grid, both feet, reward beating the defender not just keeping the ball",
+      "Change-of-direction gates - dribble through a gate then immediately cut a different direction at a cone",
+      "Scan-while-dribbling game - small-sided game where players call out a teammate's shirt color while dribbling, forces head-up control",
     ],
     rubric: {
       emerging:
-        "Loses the ball within a few touches. Cannot travel with it at walking pace under control.",
+        "Ball is often too far away or trapped under the body; changes of direction are difficult and the player frequently dribbles into pressure.",
       developing:
-        "Dribbles under control in open space with no defender, but the head is down and the ball escapes when they speed up.",
+        "Can use basic changes of direction or beat passive pressure, but control and choice are inconsistent at game speed.",
       consistent:
-        "Travels with the ball at pace, keeps it close, and changes direction with the head up in practice.",
+        "Dribbles with purpose, close control and changes of speed/direction; recognizes when to carry, beat a player or release the ball.",
       advanced:
-        "Beats a defender one-on-one in a game, protects the ball under contact, and knows when to dribble rather than pass.",
+        "Manipulates defenders with feints, tempo and both feet; escapes tight spaces or creates a clear advantage consistently.",
     },
   },
   {
-    id: "technical.shooting",
+    id: "technical.receiving",
     pillar: "Technical",
-    name: "Shooting",
+    name: "Receiving",
+    icon: "eye",
     description:
-      "Striking the ball at goal with a clean contact. At 9-12, technique and composure beat raw power every time.",
+      "Body orientation set before the ball arrives, so the next action is already open.",
     activities: [
-      "Strike a stationary ball at a 2m target, ten each foot",
-      "Pass, receive, turn and shoot from the edge of the area",
-      "Two-goal finishing game with a two-touch limit inside the box",
+      "Rondos that reward scanning",
+      "receive-on-the-half-turn games",
     ],
-    coachingCue: "Laces through the middle",
+    coachingCue: "See it before you get it",
     waysToImprove: [
-      {
-        problem: "Shots balloon over the crossbar",
-        fix: "Plant foot alongside the ball, body leaning slightly over it, strike through the middle",
-      },
-      {
-        problem: "Toe-pokes the ball",
-        fix: "Slow it right down and check the contact point on the laces before adding pace",
-      },
-      {
-        problem: "Hesitates and the chance disappears",
-        fix: "Introduce a three-second shot clock inside the box",
-      },
+      "Shoulder-check reps - partner passes while receiver checks over shoulder every rep before the ball arrives",
+      "Angled-approach receiving - receive from different angles/speeds to build adaptable body shape",
+      "Receive-under-pressure rondo - add a passive defender closing down to force quicker decisions on the touch",
     ],
     rubric: {
       emerging:
-        "Struggles to make clean contact. Shots from close range miss the target or barely reach it.",
+        "Often waits square to the ball or receives with a closed body shape, requiring a reset before the next action.",
       developing:
-        "Hits the target from a stationary ball, but contact breaks down when the ball is moving or they are on the run.",
+        "Sometimes opens the body or receives on the back foot, but needs prompts and loses efficiency under pressure.",
       consistent:
-        "Strikes a moving ball cleanly and hits the target regularly in unopposed and low-pressure finishing practice.",
+        "Regularly prepares body shape early, receives on the back foot/half-turn and keeps the next action available.",
       advanced:
-        "Finishes under pressure in a game, picks a spot rather than just hitting it, and can shoot off either foot.",
+        "Adjusts orientation early to pressure and space, receives across lines and can disguise or change the next action immediately.",
     },
   },
   {
-    id: "technical.defending-1v1",
+    id: "technical.finishing",
     pillar: "Technical",
-    name: "1v1 defending",
+    name: "Finishing",
+    icon: "target",
     description:
-      "Slowing an attacker down and winning the ball back safely. Good at this age is patient and side-on, not a dive-in.",
+      "Composure and technique over raw power, on both feet, across different finish types.",
     activities: [
-      "Shadow defending: mirror the attacker for 20 seconds without tackling",
-      "1v1 to a line, defender wins by forcing the attacker wide",
-      "Half-pitch transition game rewarding clean regains",
+      "Small-sided games ending in a goal",
+      "1v1-to-goal",
+      "finishing off crosses and cutbacks",
     ],
-    coachingCue: "Side on, be patient",
+    coachingCue: "First touch sets up the shot",
     waysToImprove: [
-      {
-        problem: "Dives in and gets beaten immediately",
-        fix: "Ban tackling for two rounds. The only aim is to stay in front and delay",
-      },
-      {
-        problem: "Stands square and gets knocked past easily",
-        fix: "Turn the body side-on with the front foot forward",
-      },
-      {
-        problem: "Backs off so far the attacker just shoots",
-        fix: "Mark a line they must not retreat beyond, then close the gap on a heavy touch",
-      },
+      "Both-feet finishing reps - alternate strong/weak foot on every repetition from the same spot",
+      "First-time finishing - service from wide or a cutback, finish first-time to build composure under speed",
+      "Small-goal 1v1-to-goal - 1v1 starting just outside the box, rewards picking a spot over blasting the ball",
     ],
     rubric: {
       emerging:
-        "Rushes at the ball or avoids the contest. The attacker goes past without being slowed.",
+        "Contact and accuracy are inconsistent; the player rushes chances and relies heavily on the stronger foot.",
       developing:
-        "Stays in front of a slow-moving attacker in a walk-through, but loses the position as soon as pace is added.",
+        "Finishes simple chances in controlled practice, but first-touch setup, composure and weaker-foot execution are inconsistent.",
       consistent:
-        "Holds a side-on position, delays the attacker and times the tackle in low-pressure practice.",
+        "Selects an appropriate finish, prepares the shot well and finishes accurately with both feet across varied game-realistic chances.",
       advanced:
-        "Defends a committed attacker in a real game, forces them onto the weaker foot, and regains the ball cleanly.",
+        "Remains composed under pressure, manipulates goalkeeper/defender cues and executes multiple finish types efficiently from varied angles.",
     },
   },
 ];
@@ -206,297 +162,293 @@ const TACTICAL: SubSkill[] = [
     id: "tactical.positioning",
     pillar: "Tactical",
     name: "Positioning",
+    icon: "map-pin",
     description:
-      "Being in a useful place both with and without the ball. At this age the win is simply not clustering around the ball.",
+      "Maintains team shape appropriate to role, keeps sensible width and depth, doesn't clump around the ball.",
     activities: [
-      "Freeze-frame: stop play and ask each player to point to the space they should be in",
-      "Zonal small-sided game where players must stay in their third",
-      "Four-goal game that rewards switching play into a wide space",
+      "Zoned small-sided games with channels",
+      "positional rondos with locked zones",
+      "shape games rewarding spacing",
     ],
-    coachingCue: "Find the space, not the ball",
+    coachingCue: "Find your space",
     waysToImprove: [
-      {
-        problem: "Everyone swarms toward the ball",
-        fix: "Use coloured zones and give a point for each zone occupied when a goal is scored",
-      },
-      {
-        problem: "Stands too close to a teammate",
-        fix: "Set a minimum five-metre spacing rule and pause play when it is broken",
-      },
-      {
-        problem: "Does not track back after attacking",
-        fix: "Require the whole team to be past halfway before a goal counts",
-      },
+      "Clumps around the ball - zoned games where players must stay in their channel",
+      "Poor width - possession games that reward using the full width of the grid",
+      "Loses shape after turnovers - transition games where the team must reset shape immediately after losing the ball",
     ],
     rubric: {
       emerging:
-        "Follows the ball everywhere regardless of position. Bunches with teammates.",
+        "Frequently follows the ball, loses team shape or role responsibilities, and becomes crowded around teammates.",
       developing:
-        "Can point to the right position when play is paused, but drifts out of it once the game restarts.",
+        "Understands basic starting positions but drifts or bunches and needs regular reminders to restore width, depth or balance.",
       consistent:
-        "Holds a sensible position through most of a small-sided game and spreads out without being told.",
+        "Maintains useful width, depth and role-specific positioning and adjusts as the ball and teammates move.",
       advanced:
-        "Adjusts position as the game changes, recognises when to push up or drop in, and does it in a competitive match.",
-    },
-  },
-  {
-    id: "tactical.decision-making",
-    pillar: "Tactical",
-    name: "Decision making",
-    description:
-      "Choosing pass, dribble or shoot, and choosing early. At 9-12 the aim is a reasonable choice made early rather than a perfect one made late.",
-    activities: [
-      "Three-option drill: coach calls pass, carry or shoot as the ball arrives",
-      "Overload games at 3v2 and 4v3 to force quicker choices",
-      "Conditioned game with a two-touch limit in the middle third",
-    ],
-    coachingCue: "Decide before it arrives",
-    waysToImprove: [
-      {
-        problem: "Holds the ball too long and gets crowded out",
-        fix: "Reduce the touch limit and praise early releases even when they do not come off",
-      },
-      {
-        problem: "Always makes the same choice regardless of the situation",
-        fix: "Pause and ask what else was available. Let them find the second option",
-      },
-      {
-        problem: "Panics and gives the ball away under pressure",
-        fix: "Rehearse one safe out-ball so there is always a default",
-      },
-    ],
-    rubric: {
-      emerging:
-        "Reacts only after the ball arrives. Choices look random, or the ball is simply kicked away.",
-      developing:
-        "Makes reasonable choices with time and space, but freezes or reverts to one habit under pressure.",
-      consistent:
-        "Chooses sensibly and early in small-sided games, and can explain the choice afterwards.",
-      advanced:
-        "Consistently picks the better option in a competitive match, including choices that go against their preference.",
+        "Anticipates the next phase, manipulates space and positions early to create attacking advantages or protect the team defensively.",
     },
   },
   {
     id: "tactical.scanning",
     pillar: "Tactical",
-    name: "Scanning and awareness",
+    name: "Scanning",
+    icon: "eye-search",
     description:
-      "Looking around before receiving so the next action is already decided. This is the habit that separates calm players from rushed ones.",
+      "Checks surroundings before and while receiving, aware of teammates, opponents, and space - not just the ball.",
     activities: [
-      "Coloured bib call-out: shout a colour they must find before controlling",
-      "Number game: hold up fingers behind the player as the pass travels",
-      "Rondo with a rule that a look over the shoulder must happen before receiving",
+      "Color/number call games before receiving",
+      "forced-scan rondos",
+      "small-sided games requiring a name-call before passing",
     ],
-    coachingCue: "Check your shoulder",
+    coachingCue: "Check often, not just once",
     waysToImprove: [
-      {
-        problem: "Only sees the ball and nothing else",
-        fix: "Reward the look itself, not the outcome, for a full session",
-      },
-      {
-        problem: "Looks but does not use what they saw",
-        fix: "Ask what they saw straight after the touch to close the loop",
-      },
-      {
-        problem: "Scans once then stops",
-        fix: "Ask for two looks: as the pass starts, and just before it lands",
-      },
+      "Doesn't scan before receiving - random-cue shoulder-check reps (coach claps, player scans)",
+      "Only scans once - continuous scanning rondo, must re-scan every few seconds regardless of ball distance",
+      "Scans but doesn't use the info - reaction games where the scanned cue decides the next action",
     ],
     rubric: {
-      emerging: "Head stays fixed on the ball. Is surprised by pressure arriving.",
+      emerging:
+        "Rarely checks surroundings before receiving and usually reacts only after the ball arrives.",
       developing:
-        "Looks around when reminded or when play is paused, but not on their own during the game.",
+        "Scans when prompted or before some receptions, but frequency and use of the information are inconsistent.",
       consistent:
-        "Checks over the shoulder before receiving in practice and uses the information some of the time.",
+        "Checks shoulders before and during receiving and regularly uses the information to select the next action.",
       advanced:
-        "Scans habitually in a match without prompting, and acts on what they saw before the ball arrives.",
+        "Scans continuously and purposefully, tracks pressure/space/teammates/opponents and anticipates the next picture before it forms.",
     },
   },
   {
-    id: "tactical.support-play",
+    id: "tactical.decisions",
     pillar: "Tactical",
-    name: "Support play",
+    name: "Decisions",
+    icon: "route",
     description:
-      "Giving the player on the ball a good option: the right distance, the right angle. Not too close, and not hidden behind a defender.",
+      "Chooses pass, dribble, or shoot based on the actual situation in front of them, not habit.",
     activities: [
-      "Triangle support drill where the receiver moves to a new angle after each pass",
-      "3v1 rondo focused purely on the supporting players' positions",
-      "Conditioned game requiring two passes before a shot",
+      "Overload/underload small-sided games",
+      "constrained-touch games to speed up reads",
+      "directional bonus-zone games",
     ],
-    coachingCue: "Show for it, on an angle",
+    coachingCue: "What does the game ask for?",
     waysToImprove: [
-      {
-        problem: "Supports directly behind a defender",
-        fix: "Ask them to move a couple of steps until they can see the passer's eyes",
-      },
-      {
-        problem: "Stands still and waits for the ball",
-        fix: "Require movement toward or away before every reception",
-      },
-      {
-        problem: "Comes far too close to the ball carrier",
-        fix: "Mark a minimum support distance with cones and play inside it",
-      },
+      "Always dribbles regardless of options - overload games rewarding a quick pass when a teammate is open",
+      "Rushes decisions - temporarily allow more touches to build composure, then reduce",
+      "Freezes or hesitates - simplified 2-option games (pass or dribble only) to build decision confidence",
     ],
     rubric: {
-      emerging: "Does not offer an option. Stands still, or hides behind an opponent.",
+      emerging:
+        "Defaults to the same action, holds the ball too long or misses obvious passing/dribbling/shooting options.",
       developing:
-        "Offers support when told where to go, but the angle and distance are wrong without instruction.",
+        "Makes correct simple choices when time is available, but decisions become inconsistent as pressure and speed increase.",
       consistent:
-        "Finds a sensible angle and distance on their own during drills and small-sided games.",
+        "Chooses pass, dribble or shoot appropriately with good timing in most game situations.",
       advanced:
-        "Continually adjusts the supporting position in a match as play shifts, creating passing lanes for teammates.",
+        "Recognizes cues early, changes the decision as the picture changes and manages risk, tempo and game state effectively.",
+    },
+  },
+  {
+    id: "tactical.support",
+    pillar: "Tactical",
+    name: "Support",
+    icon: "users",
+    description:
+      "Moves to provide angles for the teammate in possession, offers depth and width, doesn't stand still.",
+    activities: [
+      "Pass-and-move possession games",
+      "third-man-running combos",
+      "shape games rewarding supporting angles",
+    ],
+    coachingCue: "Always give an option",
+    waysToImprove: [
+      "Stands still after passing - enforce pass-and-move, can't return to the same spot",
+      "Supports too close to the ball carrier - rondos with a marked minimum support distance",
+      "Slow to reposition after turnovers - transition games rewarding quick re-support after losing the ball",
+    ],
+    rubric: {
+      emerging:
+        "Often becomes static after passing, hides behind opponents or provides no useful passing angle.",
+      developing:
+        "Offers support but the angle, distance or timing is inconsistent and often requires coaching prompts.",
+      consistent:
+        "Regularly creates clear passing angles and adjusts distance/position as the ball moves.",
+      advanced:
+        "Anticipates combinations, creates third-player/overload options and supports both attacking continuity and defensive balance.",
+    },
+  },
+  {
+    id: "tactical.movement",
+    pillar: "Tactical",
+    name: "Movement",
+    icon: "arrows-shuffle",
+    description:
+      "Makes purposeful runs to create space or receive, timing them and varying type - checking away, coming short, going long.",
+    activities: [
+      "Small-sided games rewarding runs in behind",
+      "timed runs off a server's cue",
+      "disguised third-man-running patterns",
+    ],
+    coachingCue: "Move to be useful, not just busy",
+    waysToImprove: [
+      "Static off the ball - constrained games where standing still forfeits possession",
+      "Poor run timing - server-triggered timed-run drills to build a sense of when to go",
+      "Predictable movement - disguise games rewarding checking one way and going another",
+    ],
+    rubric: {
+      emerging:
+        "Remains static off the ball or makes runs without a clear purpose or connection to the play.",
+      developing:
+        "Makes obvious supporting or forward runs, but timing, spacing and variation are inconsistent.",
+      consistent:
+        "Makes purposeful runs to receive or create space, varying checking movements, support and runs in behind.",
+      advanced:
+        "Manipulates defenders through well-timed decoy runs, rotations and third-player movement that consistently creates space or advantage.",
     },
   },
 ];
 
 const PHYSICAL: SubSkill[] = [
   {
-    id: "physical.agility",
+    id: "physical.balance",
     pillar: "Physical",
-    name: "Agility and change of direction",
+    name: "Balance",
+    icon: "yoga",
     description:
-      "Starting, stopping and turning under control. At this age it is about coordination and body control rather than raw power.",
+      "Maintains control of the body while turning, shielding, or contesting the ball, and recovers from contact without losing footing.",
     activities: [
-      "Ladder drills, two feet in each rung, building speed over 4 rounds",
-      "Five-cone star: sprint out and back to the centre, changing direction each time",
-      "Reaction tag in a 10m square",
+      "Single-leg balance games",
+      "shielding under controlled pressure",
+      "small-sided games on slightly uneven ground",
     ],
-    coachingCue: "Low and quick to turn",
+    coachingCue: "Stay low and strong",
     waysToImprove: [
-      {
-        problem: "Turns wide and loses ground",
-        fix: "Ask them to drop the hips and plant the outside foot to cut sharply",
-      },
-      {
-        problem: "Stumbles when stopping",
-        fix: "Practise decelerating over three short steps rather than one big one",
-      },
-      {
-        problem: "Always turns off the same side",
-        fix: "Call the turning direction at random so both sides get used",
-      },
+      "Falls over in duels - shielding practice with controlled pushing, cueing a low center of gravity",
+      "Loses footing on turns - single-leg balance combined with turning drills",
+      "Weak core stability - balance-based warm-up games like single-leg ball taps",
     ],
     rubric: {
       emerging:
-        "Loses balance when changing direction. Turns are slow and wide.",
+        "Loses body control during turns, contact or shielding and is frequently unstable when controlling the ball on one leg.",
       developing:
-        "Changes direction under control at walking or jogging pace, but breaks down at speed.",
+        "Remains stable in simple actions, but contact or rapid direction changes often disrupt control.",
       consistent:
-        "Starts, stops and turns sharply at pace during drills, off either side.",
+        "Maintains body control through turns, shielding and most duels and recovers balance quickly after contact.",
       advanced:
-        "Changes direction sharply in a game while keeping the ball or tracking an opponent, and recovers immediately.",
+        "Uses center of gravity and contact intelligently, remaining stable through complex, dynamic football actions under pressure.",
+    },
+  },
+  {
+    id: "physical.coordination",
+    pillar: "Physical",
+    name: "Coordination",
+    icon: "adjustments",
+    description:
+      "Syncs footwork, body, and ball control fluidly - can run, receive, and turn without stumbling.",
+    activities: [
+      "Footwork ladder into first-touch combos",
+      "multi-skill relay races",
+      "juggling progressions",
+    ],
+    coachingCue: "Smooth feet, soft touch",
+    waysToImprove: [
+      "Clumsy combining running and ball control - footwork ladder drills feeding directly into a first touch",
+      "Struggles switching between skills quickly - multi-skill circuit relay (dribble, jump, pass in sequence)",
+      "Poor foot-eye sync - juggling progressions starting from self-toss and control",
+    ],
+    rubric: {
+      emerging:
+        "Footwork, body movement and ball control often appear disconnected when running, receiving or turning.",
+      developing:
+        "Completes movement sequences at moderate speed, but coordination and technique break down as speed/complexity rise.",
+      consistent:
+        "Coordinates feet, body and ball fluidly at game-relevant speed across common football actions.",
+      advanced:
+        "Moves efficiently under high speed and pressure, adapting surfaces, footwork and body position without losing technical quality.",
+    },
+  },
+  {
+    id: "physical.agility",
+    pillar: "Physical",
+    name: "Agility",
+    icon: "activity",
+    description:
+      "Changes direction and speed quickly, especially reacting to an opponent or the ball rather than a fixed pattern.",
+    activities: [
+      "Reactive shuttle runs with a partner's signal",
+      "cone weaving with the ball",
+      "1v1 mirror drills",
+    ],
+    coachingCue: "Quick feet, quick decisions",
+    waysToImprove: [
+      "Slow to change direction - short shuttle-style cone drills with the ball",
+      "Poor reactive agility - mirror drills reacting to a partner's movement",
+      "Predictable movement patterns - random-cue agility drills where the coach calls a direction or color",
+    ],
+    rubric: {
+      emerging:
+        "Changes direction slowly or with many adjustment steps and struggles to react to an opponent or ball movement.",
+      developing:
+        "Changes direction effectively in planned tasks, but reactive movement and control are inconsistent.",
+      consistent:
+        "Reacts and changes direction/speed efficiently with or without the ball while maintaining control.",
+      advanced:
+        "Decelerates, re-accelerates and changes direction explosively in multiple planes and uses those actions tactically to gain advantage.",
     },
   },
   {
     id: "physical.speed",
     pillar: "Physical",
     name: "Speed",
+    icon: "bolt",
     description:
-      "Getting from A to B quickly, and knowing when to. Short repeated sprints matter far more than long-distance pace at this age.",
+      "Accelerates quickly over short distances with good sprinting mechanics - most useful actions in a game happen in bursts under 20m.",
     activities: [
-      "10m sprints from varied starts: standing, seated, on a call",
-      "Partner chase over 15m with a one-second head start",
-      "Sprint-and-recover shuttles, 6 reps with a walk back",
+      "Varied-start sprint reps",
+      "short technical sprint drills",
+      "race-to-space small-sided games",
     ],
-    coachingCue: "Drive the arms",
+    coachingCue: "Explode, don't ease into it",
     waysToImprove: [
-      {
-        problem: "Slow off the mark",
-        fix: "Practise the first three steps only, leaning forward out of the start",
-      },
-      {
-        problem: "Runs at one pace throughout",
-        fix: "Play games that reward a burst, such as beating a defender to a loose ball",
-      },
-      {
-        problem: "Tires quickly after a sprint",
-        fix: "Build repeat efforts with short recoveries rather than single long runs",
-      },
+      "Slow off the mark - sprint starts from seated, lying, or jogging positions",
+      "Poor sprint mechanics - short technical sprint drills focused on arm drive and knee lift over 10-15m",
+      "Loses speed with the ball - race-to-space games combining a sprint with dribbling",
     ],
     rubric: {
       emerging:
-        "Runs at a single pace. Cannot produce a noticeable burst when needed.",
+        "First steps and sprint mechanics limit acceleration and the player rarely exploits available space at the moment it opens.",
       developing:
-        "Sprints hard in a straight line when told to, but does not choose to sprint during play.",
+        "Can accelerate in clear situations, but first-step intent, mechanics or timing are inconsistent.",
       consistent:
-        "Produces a genuine burst in practice games and repeats it several times in a session.",
+        "Accelerates decisively over game-relevant distances with sound mechanics and uses speed at appropriate moments.",
       advanced:
-        "Sprints at the right moments in a match, repeats efforts across the game, and recovers quickly between them.",
+        "Repeatedly creates or closes separation through explosive first steps, efficient mechanics and excellent timing. Judge relative to current maturation.",
     },
   },
   {
-    id: "physical.balance",
+    id: "physical.endurance",
     pillar: "Physical",
-    name: "Balance and coordination",
+    name: "Endurance",
+    icon: "battery-charging",
     description:
-      "Staying upright and in control through contact, turns and awkward bounces. This underpins nearly every technical skill.",
+      "Maintains work rate and technical quality through a full session or game, without fading in the second half.",
     activities: [
-      "One-leg stands progressing to one-leg passes",
-      "Hop-and-hold: jump, land on one foot, hold for three seconds",
-      "Shoulder-to-shoulder contests over a rolling ball",
+      "Continuous small-sided games at match intensity",
+      "interval-based possession games",
+      "fun conditioning like tag games",
     ],
-    coachingCue: "Strong through the middle",
+    coachingCue: "Keep your work rate up",
     waysToImprove: [
-      {
-        problem: "Falls over easily under light contact",
-        fix: "Practise shoulder-to-shoulder holds at walking pace before adding speed",
-      },
-      {
-        problem: "Cannot strike or control on the weaker side",
-        fix: "Build single-leg balance on the standing foot first",
-      },
-      {
-        problem: "Lands heavily and slowly after jumping",
-        fix: "Coach a soft, bent-knee landing and hold the position",
-      },
+      "Fades in the second half - interval small-sided games that build work capacity gradually",
+      "Poor recovery between efforts - short high-intensity bursts with active recovery periods",
+      "Loses technical quality when tired - possession games with slightly extended duration under fatigue",
     ],
     rubric: {
       emerging:
-        "Unsteady on one foot. Goes to ground easily and struggles to recover balance.",
+        "Involvement, movement quality or technical execution drops noticeably and extended recovery is often needed.",
       developing:
-        "Balanced when still or moving slowly, but loses control at speed or in contact.",
+        "Maintains effort for periods, but intensity, concentration or technical quality varies as the session/game continues.",
       consistent:
-        "Stays balanced through turns, contact and awkward bounces during practice.",
+        "Repeats high-intensity actions and maintains technical/tactical engagement through most of the session or game.",
       advanced:
-        "Holds off opponents and stays on their feet through contested situations in a match.",
-    },
-  },
-  {
-    id: "physical.stamina",
-    pillar: "Physical",
-    name: "Stamina",
-    description:
-      "Staying effective for the whole session or match. Watch for whether the quality of their play drops, not just whether they look tired.",
-    activities: [
-      "Continuous small-sided games with short rotations",
-      "Four-minute possession blocks with 60 seconds of recovery",
-      "Progressive shuttle runs, stopping well before exhaustion",
-    ],
-    coachingCue: "Same quality, last minute",
-    waysToImprove: [
-      {
-        problem: "Drops out of the game in the final third of a session",
-        fix: "Shorten the shifts and rotate more often, then extend gradually",
-      },
-      {
-        problem: "Walks back after every attack",
-        fix: "Set a jogging recovery expectation and praise it visibly",
-      },
-      {
-        problem: "Technique falls apart when tired",
-        fix: "Place short technical work at the end of the session on purpose",
-      },
-    ],
-    rubric: {
-      emerging:
-        "Tires within minutes. Stops running and takes themselves out of the game early.",
-      developing:
-        "Keeps up through the early part of a session, but fades noticeably before the end.",
-      consistent:
-        "Maintains work rate through a full practice, with only a small drop-off late on.",
-      advanced:
-        "Holds both work rate and technical quality to the end of a competitive match, and recovers quickly between efforts.",
+        "Sustains a high work rate and decision quality, recovers quickly between demanding actions and remains influential late in play.",
     },
   },
 ];
@@ -506,147 +458,87 @@ const MENTAL: SubSkill[] = [
     id: "mental.confidence",
     pillar: "Mental",
     name: "Confidence",
+    icon: "shield-check",
     description:
-      "Willingness to get on the ball and try things, especially after a mistake. At this age the signal is whether they ask for the ball again.",
+      "Willing to try skills in games without fear of failure, takes on 1v1s, and asks for the ball rather than hiding from it.",
     activities: [
-      "Guaranteed-touch games where every player must receive before a goal counts",
-      "1v1 challenges against similar-ability opponents to build wins",
-      "Praise-the-attempt rounds where trying a skill scores regardless of outcome",
+      "Games that reward attempting a skill regardless of outcome",
+      "personal-best skill challenges (not compared to others)",
+      "praise-effort coaching environment",
     ],
-    coachingCue: "Next one, get on it",
+    coachingCue: "Play with freedom",
     waysToImprove: [
-      {
-        problem: "Hides after making a mistake",
-        fix: "Get them an easy touch immediately so the next action is a success",
-      },
-      {
-        problem: "Never attempts anything creative",
-        fix: "Run a session where losing the ball while trying a skill carries no penalty",
-      },
-      {
-        problem: "Only confident in training, not in matches",
-        fix: "Give one specific, achievable job for the match so success is defined and reachable",
-      },
+      "Always plays it safe - bonus points for attempting a 1v1 or skill move even if it doesn't come off",
+      "Fears embarrassment after a mistake - next-play drills that immediately re-engage the player after an error",
+      "Hesitant to ask for the ball - games that require calling for the ball out loud to receive it",
     ],
     rubric: {
       emerging:
-        "Avoids the ball. Body language drops after an error, and they withdraw from play.",
+        "Often avoids the ball or avoids attempting learned actions, especially after an error or under pressure.",
       developing:
-        "Gets involved in familiar drills and with familiar teammates, but goes quiet in games or with new groups.",
+        "Attempts skills in comfortable situations but becomes cautious when pressure rises or after mistakes.",
       consistent:
-        "Asks for the ball regularly in practice and tries things without needing reassurance first.",
+        "Regularly asks for the ball and attempts appropriate actions despite the possibility of failure.",
       advanced:
-        "Wants the ball at difficult moments in a match, and recovers quickly from a mistake to demand it again.",
+        "Plays with constructive assertiveness, accepts responsibility in difficult moments and helps teammates play with confidence too.",
     },
   },
   {
-    id: "mental.focus",
+    id: "mental.reaction-to-mistakes",
     pillar: "Mental",
-    name: "Focus",
+    name: "Reaction to mistakes",
+    icon: "refresh",
     description:
-      "Staying switched on through instructions, waiting time and the quiet parts of a game. Distraction at this age is normal, so look for the trend.",
+      "Recovers quickly after an error, doesn't sulk or disengage, and gets straight back into the play.",
     activities: [
-      "Short, sharp instruction blocks with an immediate action to follow",
-      "Trigger games where play only starts on a specific call",
-      "Ask a player to repeat back the task before the drill begins",
+      "Next-ball mentality games",
+      "immediate transition-back drills after a giveaway",
+      "coach-modeled positive self-talk",
     ],
-    coachingCue: "Eyes here, then go",
+    coachingCue: "Next ball",
     waysToImprove: [
-      {
-        problem: "Drifts off while waiting in line",
-        fix: "Cut queue sizes so nobody waits more than about 20 seconds",
-      },
-      {
-        problem: "Misses the instruction and does the wrong thing",
-        fix: "Keep instructions to one point and have a player repeat it back",
-      },
-      {
-        problem: "Switches off when not directly involved in play",
-        fix: "Give an off-ball job to watch for, then ask about it afterwards",
-      },
+      "Dwells on errors, head drops - immediate re-engagement drills right after a mistake",
+      "Avoids retrying after failing - repetition drills where the same skill is retried right away",
+      "Negative self-talk - coach reframes and praises the attempt, not just the outcome",
     ],
     rubric: {
       emerging:
-        "Rarely takes in instructions. Frequently off-task and needs repeated redirection.",
+        "Dwells on errors, disengages or is slow to transition into the next action after a mistake.",
       developing:
-        "Focuses for short bursts and in activities they enjoy, but loses attention during quieter phases.",
+        "Recovers with prompts, but body language or focus can remain affected for several actions.",
       consistent:
-        "Follows instructions and stays engaged through most of a session without reminders.",
+        "Quickly re-engages, resets and performs the next action without allowing the previous mistake to control behavior.",
       advanced:
-        "Stays switched on through a full match including off-ball phases, and refocuses quickly after a setback.",
+        "Responds immediately and constructively, often initiating the recovery action while remaining emotionally steady and solution-focused.",
     },
   },
   {
-    id: "mental.resilience",
+    id: "mental.concentration",
     pillar: "Mental",
-    name: "Resilience",
+    name: "Concentration",
+    icon: "focus-2",
     description:
-      "How they respond to going behind, being beaten, or making an error. The measure is the response, not the absence of frustration.",
+      "Stays engaged and switched-on through a full session, including the less exciting parts, without drifting off.",
     activities: [
-      "Deliberate deficit games starting a team two goals down",
-      "Repeat-the-skill challenges where success only comes after several failures",
-      "Reset routine practice: a fixed action to perform after any mistake",
+      "Short game-based segments over long explanations",
+      "activities rotated every 8-10 minutes",
+      "decision-heavy games requiring constant attention",
     ],
-    coachingCue: "Mistake done, next action",
+    coachingCue: "Stay switched on",
     waysToImprove: [
-      {
-        problem: "Gives up when the team goes behind",
-        fix: "Set process goals that are still winnable regardless of the score",
-      },
-      {
-        problem: "Visibly frustrated and it affects the next few minutes",
-        fix: "Teach a short reset routine such as a deep breath and a jog back to position",
-      },
-      {
-        problem: "Blames teammates or the referee",
-        fix: "Redirect to the one thing they control, then acknowledge it when they do it",
-      },
+      "Loses focus during instructions - keep talk short, demonstrate instead of explaining at length",
+      "Drifts in low-intensity moments - rotate activities frequently, keep sessions game-based",
+      "Struggles with distractions - gradually add game-relevant busyness (crowd, small-sided chaos) to build focus under real conditions",
     ],
     rubric: {
       emerging:
-        "Shuts down, becomes upset, or stops trying after a setback. Needs adult intervention to re-engage.",
+        "Frequently becomes disconnected from play, misses instructions/restarts or reacts late to changes of possession.",
       developing:
-        "Recovers from small setbacks with encouragement, but a significant one ends their session.",
+        "Maintains focus for short periods, but attention drops when away from the ball or during longer phases.",
       consistent:
-        "Bounces back from mistakes on their own within a minute or two during practice.",
+        "Stays engaged and recognizes important cues, restarts and phase changes for most of the session/game.",
       advanced:
-        "Keeps competing through adversity in a real match, and lifts teammates rather than dropping their heads.",
-    },
-  },
-  {
-    id: "mental.competitiveness",
-    pillar: "Mental",
-    name: "Competitiveness",
-    description:
-      "Wanting to win the moment in front of them, within the spirit of the game. Look for effort in contests, not aggression.",
-    activities: [
-      "50/50 ball contests from equal distance",
-      "Short knockout tournaments with quick rounds",
-      "Race-to-the-ball starts before a 1v1",
-    ],
-    coachingCue: "Win this one",
-    waysToImprove: [
-      {
-        problem: "Backs out of 50/50 challenges",
-        fix: "Start contests at walking pace so the contact is predictable, then build up",
-      },
-      {
-        problem: "Only competes when already winning",
-        fix: "Use handicapped games so they practise chasing a result",
-      },
-      {
-        problem: "Competitiveness tips into arguing or fouling",
-        fix: "Name the line clearly, and reward hard-but-fair contests out loud",
-      },
-    ],
-    rubric: {
-      emerging: "Avoids contests. Concedes the ball rather than competing for it.",
-      developing:
-        "Competes in drills and when comfortable, but pulls out of physical or high-stakes contests.",
-      consistent:
-        "Consistently competes for loose balls and 50/50s during practice games.",
-      advanced:
-        "Competes hard and fairly throughout a match, including when losing, without losing discipline.",
+        "Maintains sustained focus, anticipates transitions/restarts and helps organize teammates before the next action develops.",
     },
   },
 ];
@@ -656,147 +548,87 @@ const SOCIAL: SubSkill[] = [
     id: "social.communication",
     pillar: "Social",
     name: "Communication",
+    icon: "message-2",
     description:
-      "Talking usefully on the pitch: calling for the ball, warning a teammate, organising. Useful information beats volume.",
+      "Talks to teammates during play - calling for the ball, warning of pressure, directing - rather than staying silent.",
     activities: [
-      "Silent-then-loud games: one round with no talking, one with required calls",
-      "Mandatory call before receiving, such as name plus turn or man on",
-      "Nominate a captain each round to organise restarts",
+      "Games requiring a verbal call to score or receive",
+      "communication-required rondos",
+      "'no goal without a call' small-sided games",
     ],
-    coachingCue: "Tell them what you see",
+    coachingCue: "Talk early, talk often",
     waysToImprove: [
-      {
-        problem: "Says nothing for the whole session",
-        fix: "Give one specific phrase to use and ask for it five times",
-      },
-      {
-        problem: "Shouts but gives no useful information",
-        fix: "Teach the difference between noise and information, such as man on versus time",
-      },
-      {
-        problem: "Only talks to close friends",
-        fix: "Rotate pairings deliberately every few minutes",
-      },
+      "Silent on and off the ball - require a verbal call before receiving or scoring",
+      "Doesn't warn teammates under pressure - reward players who call 'man on' for a teammate",
+      "Communicates but not useful info - teach specific vocabulary (time, man on, turn) tied to real situations",
     ],
     rubric: {
-      emerging: "Silent on the pitch. Does not call for the ball or respond to teammates.",
+      emerging:
+        "Rarely communicates, or information is late/unclear and does not help teammates make decisions.",
       developing:
-        "Speaks when prompted or when playing with friends, but goes quiet otherwise.",
+        "Communicates when prompted, mainly to ask for the ball, with inconsistent timing or detail.",
       consistent:
-        "Calls for the ball and passes on simple useful information during practice games.",
+        "Gives timely, useful football information (e.g., time, turn, pressure, names, organize) and also listens to teammates.",
       advanced:
-        "Communicates usefully throughout a match, organises teammates around them, and is heard under pressure.",
+        "Uses constant, purposeful two-way communication that improves coordination, awareness and decision-making across the team.",
     },
   },
   {
     id: "social.teamwork",
     pillar: "Social",
     name: "Teamwork",
+    icon: "users-group",
     description:
-      "Playing for the team rather than for themselves. At this age, sharing the ball and covering for a teammate are the clearest signs.",
+      "Plays for the team - shares the ball, includes all teammates, and celebrates others' success rather than just their own.",
     activities: [
-      "Minimum-passes-before-a-goal conditioned games",
-      "Assist-counts-double scoring",
-      "Team challenges where every player must touch the ball in a move",
+      "Small-sided games rewarding assists as much as goals",
+      "rotating pairs/groups so everyone plays together",
+      "cooperative team-target challenges",
     ],
-    coachingCue: "Play for the shirt",
+    coachingCue: "We before me",
     waysToImprove: [
-      {
-        problem: "Never passes and always shoots",
-        fix: "Make an assist worth two goals for a session",
-      },
-      {
-        problem: "Does not cover when a teammate is beaten",
-        fix: "Pair players up and make them responsible for each other's zone",
-      },
-      {
-        problem: "Criticises teammates after mistakes",
-        fix: "Introduce a rule that the only words after an error are encouraging ones",
-      },
+      "Ball hogs, doesn't involve others - games that reward assists as much as goals",
+      "Excludes weaker teammates - rotate pairs and groups so every player works with every player",
+      "Doesn't celebrate others - coach models and rewards visible team celebration after any teammate's success",
     ],
     rubric: {
       emerging:
-        "Plays entirely as an individual. Does not pass or support, and may criticise teammates.",
+        "Frequently prioritizes an individual action and offers limited support, sharing or inclusion of teammates.",
       developing:
-        "Shares the ball with certain teammates or when instructed, but reverts to individual play under pressure.",
+        "Cooperates with teammates but decisions and effort can become individualistic or inconsistent.",
       consistent:
-        "Passes, supports and covers for teammates through most of a practice game.",
+        "Shares the ball, supports teammates, accepts roles and recognizes team actions as well as personal actions.",
       advanced:
-        "Puts the team first in a competitive match, including making the unselfish choice when a personal one was available.",
+        "Actively improves group function by covering teammates, connecting units, helping others succeed and placing team needs ahead of personal statistics.",
     },
   },
   {
-    id: "social.coachability",
+    id: "social.response-to-coaching",
     pillar: "Social",
-    name: "Coachability",
+    name: "Response to coaching",
+    icon: "ear",
     description:
-      "Taking on feedback and actually changing something. Look for the adjustment in the next few minutes, not just the nod.",
+      "Listens to feedback, applies it without getting defensive, and asks questions when unsure rather than staying quiet.",
     activities: [
-      "One-instruction rounds where a single change is coached and then checked",
-      "Peer coaching in pairs, giving one another a single cue",
-      "Self-review: ask them what they would change before you say anything",
+      "Immediate try-again drills right after a coaching point",
+      "short reflection questions after activities",
+      "peer feedback exercises",
     ],
-    coachingCue: "Try it my way once",
+    coachingCue: "Hear it, try it",
     waysToImprove: [
-      {
-        problem: "Nods but does not change anything",
-        fix: "Make the feedback a single concrete action and check for it immediately",
-      },
-      {
-        problem: "Becomes defensive when corrected",
-        fix: "Lead with something they did well, then give one specific adjustment",
-      },
-      {
-        problem: "Applies the change once then reverts",
-        fix: "Use the same cue word repeatedly across several sessions",
-      },
+      "Ignores or resists feedback - immediate try-again drills straight after a coaching point",
+      "Gets defensive or discouraged by correction - reframe as 'next step,' praise the adjustment attempt",
+      "Doesn't ask questions when confused - build in a quick check-for-understanding moment before starting",
     ],
     rubric: {
       emerging:
-        "Ignores or resists feedback. No visible change after coaching, and may react defensively.",
+        "Struggles to listen to or attempt feedback and repeats the same behavior without visibly trying the adjustment.",
       developing:
-        "Attempts a change when asked directly, but it does not last beyond the drill.",
+        "Understands feedback and attempts the change, but needs reminders or repeated demonstrations.",
       consistent:
-        "Takes on feedback and holds the change through the rest of the session.",
+        "Listens, asks for clarification when needed and applies feedback in subsequent repetitions or game situations.",
       advanced:
-        "Applies coaching in a match without reminders, and seeks feedback out on their own.",
-    },
-  },
-  {
-    id: "social.respect",
-    pillar: "Social",
-    name: "Respect and fair play",
-    description:
-      "How they treat opponents, referees and teammates, especially when things go against them. Non-negotiable at every level.",
-    activities: [
-      "Player-refereed games where the players make their own calls",
-      "Handshake and one genuine compliment to an opponent after every game",
-      "Discussion of a foul situation with no blame attached",
-    ],
-    coachingCue: "Respect the game",
-    waysToImprove: [
-      {
-        problem: "Argues with the referee",
-        fix: "Have them referee a game themselves and talk about it afterwards",
-      },
-      {
-        problem: "Mocks opponents after scoring",
-        fix: "Set a clear celebration standard and apply it consistently to everyone",
-      },
-      {
-        problem: "Fouls out of frustration",
-        fix: "Link it back to the reset routine and substitute briefly to cool down",
-      },
-    ],
-    rubric: {
-      emerging:
-        "Argues with officials, disrespects opponents, or reacts badly to decisions.",
-      developing:
-        "Behaves well when things go their way, but respect slips when frustrated or losing.",
-      consistent:
-        "Treats teammates, opponents and officials well through most of a practice or game.",
-      advanced:
-        "Holds the standard under real provocation in a match, and sets the tone for teammates.",
+        "Applies feedback independently, reflects on it and transfers the underlying principle to new situations without repeated prompting.",
     },
   },
 ];
@@ -811,6 +643,6 @@ export const SEED_SUB_SKILLS: SubSkill[] = [
 
 export const SEED_CONTENT: ContentDoc = {
   version: 1,
-  updatedAt: "2026-08-29T00:00:00.000Z",
+  updatedAt: "2026-08-30T14:40:16.971Z",
   subSkills: SEED_SUB_SKILLS,
 };

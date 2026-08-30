@@ -1,12 +1,14 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useContentDoc } from "@/components/ContentProvider";
 import { SkillRow } from "@/components/SkillRow";
 import { byPillar } from "@/lib/content";
+import { currentPlayerStore } from "@/lib/current-player";
+import { scoreFor, scoreStore } from "@/lib/scores";
 import { PILLARS, PILLAR_META, type Pillar } from "@/lib/types";
 
 export default function BrowsePage() {
@@ -82,8 +84,19 @@ function AllPillars() {
 
 function PillarView({ pillar }: { pillar: Pillar }) {
   const { content } = useContentDoc();
+  const scores = useSyncExternalStore(
+    scoreStore.subscribe,
+    scoreStore.getSnapshot,
+    scoreStore.getServerSnapshot,
+  );
+  const player = useSyncExternalStore(
+    currentPlayerStore.subscribe,
+    currentPlayerStore.getSnapshot,
+    currentPlayerStore.getServerSnapshot,
+  );
   const meta = PILLAR_META[pillar];
   const skills = byPillar(content, pillar);
+  const rated = skills.filter((s) => scoreFor(scores, s.id, player)).length;
 
   return (
     <main className="flex-1 pb-8">
@@ -120,9 +133,19 @@ function PillarView({ pillar }: { pillar: Pillar }) {
       </header>
 
       <div className="px-4 pt-4">
+        {player.trim() && (
+          <p className="mb-2 text-sm text-muted">
+            {rated} of {skills.length} assessed for {player.trim()}
+          </p>
+        )}
         <ul className="flex flex-col gap-2">
           {skills.map((s) => (
-            <SkillRow key={s.id} skill={s} />
+            <SkillRow
+              key={s.id}
+              skill={s}
+              rating={scoreFor(scores, s.id, player)?.rating}
+              showPillar={false}
+            />
           ))}
         </ul>
         {skills.length === 0 && (
