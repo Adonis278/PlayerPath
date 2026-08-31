@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "civic-lens-ai"
-  }
+  },
+  "targets": {
+    "civic-lens-ai": {
+      "hosting": {
+        "playerpath": [
+          "playerpath"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
