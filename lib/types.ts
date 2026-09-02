@@ -43,8 +43,8 @@ export type Score = {
   /** Workflow step 3: one brief observation supporting the rating. */
   evidence?: string;
   priority?: Priority;
-  /** Free text chosen by the coach - a jersey number is enough. Device-local only. */
-  playerLabel?: string;
+  /** References a Player in the roster (lib/roster.ts). Device-local only. */
+  playerId?: string;
   at: string;
 };
 

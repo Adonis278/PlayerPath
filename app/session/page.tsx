@@ -6,7 +6,8 @@ import { useContentDoc } from "@/components/ContentProvider";
 import { PlayerField } from "@/components/PlayerField";
 import { SkillIcon } from "@/components/SkillIcon";
 import { findSubSkill } from "@/lib/content";
-import { currentPlayerStore } from "@/lib/current-player";
+import { currentPlayerIdStore } from "@/lib/current-player";
+import { findPlayer, playerDisplayName, rosterStore } from "@/lib/roster";
 import {
   buildAssessment,
   clearScores,
@@ -38,22 +39,29 @@ export default function SessionPage() {
     scoreStore.getSnapshot,
     scoreStore.getServerSnapshot,
   );
-  const player = useSyncExternalStore(
-    currentPlayerStore.subscribe,
-    currentPlayerStore.getSnapshot,
-    currentPlayerStore.getServerSnapshot,
+  const playerId = useSyncExternalStore(
+    currentPlayerIdStore.subscribe,
+    currentPlayerIdStore.getSnapshot,
+    currentPlayerIdStore.getServerSnapshot,
   );
+  const roster = useSyncExternalStore(
+    rosterStore.subscribe,
+    rosterStore.getSnapshot,
+    rosterStore.getServerSnapshot,
+  );
+  const player = findPlayer(roster, playerId);
+  const playerDisplay = playerDisplayName(player);
 
   const [confirmClear, setConfirmClear] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const assessment = useMemo(
-    () => buildAssessment(content, scores, player),
-    [content, scores, player],
+    () => buildAssessment(content, scores, playerId || undefined),
+    [content, scores, playerId],
   );
 
   async function share() {
-    const text = exportAsText(assessment, content);
+    const text = exportAsText(assessment, content, playerDisplay);
     try {
       if (navigator.share) {
         await navigator.share({ title: "PlayerPath assessment", text });
@@ -85,8 +93,8 @@ export default function SessionPage() {
       {empty ? (
         <div className="mt-5 rounded-2xl border border-line bg-surface p-6 text-center">
           <p className="font-semibold">
-            {player.trim()
-              ? `Nothing recorded for ${player.trim()} yet`
+            {player
+              ? `Nothing recorded for ${playerDisplay} yet`
               : "No assessment started"}
           </p>
           <p className="mt-1 text-sm text-muted">
@@ -140,7 +148,7 @@ export default function SessionPage() {
             <div className="mt-3 rounded-2xl border-2 border-developing bg-surface p-4 md:max-w-md">
               <p className="font-semibold">Clear every assessment on this device?</p>
               <p className="mt-1 text-sm text-muted">
-                This removes all players, not just {assessment.playerLabel}. It
+                This removes all players, not just {playerDisplay}. It
                 cannot be undone — export first if you want to keep it.
               </p>
               <div className="mt-3 flex gap-2">

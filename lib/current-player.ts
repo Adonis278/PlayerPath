@@ -3,17 +3,19 @@
 import { createStore } from "./store";
 
 /**
- * The player currently being assessed.
+ * The id of the player currently being assessed one-on-one.
  *
  * The workbook's workflow is one player across all 21 sub-skills, so this has to
- * survive navigation - otherwise a coach re-types the label on every skill and
- * the ratings scatter across 21 separate "players". Device-local, like everything
- * else in the assessment path.
+ * survive navigation - otherwise a coach re-selects the player on every skill.
+ * Stores an id into the roster (lib/roster.ts) rather than a raw label, so
+ * renaming a player does not lose the selection. Squad quick-rating (rating one
+ * skill across the whole roster) does not use this - it has no single "current"
+ * player by design.
  */
 
-const KEY = "playerpath.currentPlayer.v1";
+const KEY = "playerpath.currentPlayerId.v1";
 
-export function readCurrentPlayer(): string {
+export function readCurrentPlayerId(): string {
   if (typeof window === "undefined") return "";
   try {
     return window.localStorage.getItem(KEY) ?? "";
@@ -22,13 +24,13 @@ export function readCurrentPlayer(): string {
   }
 }
 
-export function setCurrentPlayer(label: string) {
+export function setCurrentPlayerId(id: string) {
   try {
-    window.localStorage.setItem(KEY, label);
+    window.localStorage.setItem(KEY, id);
   } catch {
     /* non-essential */
   }
-  currentPlayerStore.invalidate();
+  currentPlayerIdStore.invalidate();
 }
 
-export const currentPlayerStore = createStore<string>(readCurrentPlayer, "");
+export const currentPlayerIdStore = createStore<string>(readCurrentPlayerId, "");

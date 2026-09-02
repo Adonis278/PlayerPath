@@ -1,67 +1,90 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { currentPlayerStore, setCurrentPlayer } from "@/lib/current-player";
-import { listPlayers, scoreStore } from "@/lib/scores";
+import { useState, useSyncExternalStore } from "react";
+import { currentPlayerIdStore, setCurrentPlayerId } from "@/lib/current-player";
+import { findPlayer, playerDisplayName, rosterStore, upsertPlayer } from "@/lib/roster";
 
 /**
- * Who is being assessed. Shared across screens so a coach can work one player
- * through several sub-skills without retyping, and offers previously used labels
- * so the same player does not end up split across "7", "no.7" and "Seven".
+ * Who is being assessed one-on-one. Shared across screens via currentPlayerId,
+ * so a coach can work one player through several sub-skills without retyping.
  *
- * A jersey number is suggested over a name deliberately: nothing here is
- * uploaded, but the less identifying data sitting on a phone the better.
+ * Label (jersey number) is the primary, always-visible field - that alone is
+ * enough to use the app. Name is optional and secondary: some coaches want to
+ * know who they scored later, but nothing here requires it, and a jersey number
+ * alone keeps the identifying footprint smaller.
  */
-export function PlayerField({ compact = false }: { compact?: boolean }) {
-  const player = useSyncExternalStore(
-    currentPlayerStore.subscribe,
-    currentPlayerStore.getSnapshot,
-    currentPlayerStore.getServerSnapshot,
+export function PlayerField() {
+  const playerId = useSyncExternalStore(
+    currentPlayerIdStore.subscribe,
+    currentPlayerIdStore.getSnapshot,
+    currentPlayerIdStore.getServerSnapshot,
   );
-  const scores = useSyncExternalStore(
-    scoreStore.subscribe,
-    scoreStore.getSnapshot,
-    scoreStore.getServerSnapshot,
+  const roster = useSyncExternalStore(
+    rosterStore.subscribe,
+    rosterStore.getSnapshot,
+    rosterStore.getServerSnapshot,
   );
 
-  const known = listPlayers(scores).filter(Boolean);
+  const current = findPlayer(roster, playerId);
+
+  // Local drafts so typing does not create a roster entry on every keystroke -
+  // only on blur, once the coach has settled on a value.
+  const [labelDraft, setLabelDraft] = useState<string | null>(null);
+  const [nameDraft, setNameDraft] = useState<string | null>(null);
+  const label = labelDraft ?? current?.label ?? "";
+  const name = nameDraft ?? current?.name ?? "";
+
+  function commit(nextLabel: string, nextName: string) {
+    setLabelDraft(null);
+    setNameDraft(null);
+    if (!nextLabel.trim()) {
+      setCurrentPlayerId("");
+      return;
+    }
+    const player = upsertPlayer({ id: current?.id, label: nextLabel, name: nextName });
+    setCurrentPlayerId(player.id);
+  }
 
   return (
     <div className="flex flex-col gap-1.5">
-      {!compact && (
-        <span className="text-sm font-bold uppercase tracking-wide text-muted">
-          Player
-        </span>
-      )}
+      <span className="text-sm font-bold uppercase tracking-wide text-muted">
+        Player
+      </span>
+
       <input
-        value={player}
-        onChange={(e) => setCurrentPlayer(e.target.value)}
-        list="playerpath-known-players"
+        value={label}
+        onChange={(e) => setLabelDraft(e.target.value)}
+        onBlur={() => commit(label, name)}
         placeholder="Jersey number, e.g. 7"
-        aria-label="Player being assessed"
+        aria-label="Player label"
         autoComplete="off"
         className="h-12 rounded-xl border-2 border-line bg-surface px-3 outline-none focus:border-brand focus:bg-bg"
       />
-      <datalist id="playerpath-known-players">
-        {known.map((p) => (
-          <option key={p} value={p} />
-        ))}
-      </datalist>
 
-      {known.length > 0 && (
+      <input
+        value={name}
+        onChange={(e) => setNameDraft(e.target.value)}
+        onBlur={() => commit(label, name)}
+        placeholder="Name (optional)"
+        aria-label="Player name, optional"
+        autoComplete="off"
+        className="h-11 rounded-xl border-2 border-line bg-surface px-3 text-sm outline-none focus:border-brand focus:bg-bg"
+      />
+
+      {roster.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pt-0.5">
-          {known.slice(0, 6).map((p) => (
+          {roster.slice(0, 8).map((p) => (
             <button
-              key={p}
+              key={p.id}
               type="button"
-              onClick={() => setCurrentPlayer(p)}
+              onClick={() => setCurrentPlayerId(p.id)}
               className={`h-8 rounded-full border-2 px-3 text-sm font-semibold ${
-                p === player
+                p.id === playerId
                   ? "border-brand bg-brand text-white"
                   : "border-line text-muted"
               }`}
             >
-              {p}
+              {playerDisplayName(p)}
             </button>
           ))}
         </div>

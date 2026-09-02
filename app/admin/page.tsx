@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { User } from "firebase/auth";
 import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
 import { useContentDoc } from "@/components/ContentProvider";
-import { remoteContentExists, saveContent } from "@/lib/content";
+import { listVersions, remoteContentExists, saveContent } from "@/lib/content";
 import { validateContent, contentWarnings, type Issue } from "@/lib/validate";
 import { parseWorkbook } from "@/lib/import-xlsx";
 import { LEVELS, PILLARS, type ContentDoc, type SubSkill } from "@/lib/types";
@@ -174,6 +174,7 @@ function Editor({ user }: { user: User }) {
   const { content, refresh } = useContentDoc();
   const [draft, setDraft] = useState<ContentDoc>(content);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   const [needsSeeding, setNeedsSeeding] = useState(false);
@@ -225,22 +226,45 @@ function Editor({ user }: { user: User }) {
     );
   }
 
+  if (showHistory) {
+    return (
+      <VersionHistory
+        currentVersion={content.version}
+        onDone={() => setShowHistory(false)}
+        onReverted={async () => {
+          await refresh();
+          setShowHistory(false);
+          setStatus("Reverted. Coaches will see this on their next launch.");
+        }}
+      />
+    );
+  }
+
   return (
     <Shell
       title="Manage content"
       right={
-        <button
-          type="button"
-          onClick={async () => {
-            const auth = await getFirebaseAuth();
-            if (!auth) return;
-            const { signOut } = await import("firebase/auth");
-            await signOut(auth);
-          }}
-          className="h-10 rounded-xl border-2 border-line px-3 text-sm font-semibold text-muted"
-        >
-          Sign out
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setShowHistory(true)}
+            className="h-10 rounded-xl border-2 border-line px-3 text-sm font-semibold text-muted"
+          >
+            History
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const auth = await getFirebaseAuth();
+              if (!auth) return;
+              const { signOut } = await import("firebase/auth");
+              await signOut(auth);
+            }}
+            className="h-10 rounded-xl border-2 border-line px-3 text-sm font-semibold text-muted"
+          >
+            Sign out
+          </button>
+        </div>
       }
     >
       <p className="mb-4 text-sm text-muted">
@@ -341,6 +365,146 @@ function Editor({ user }: { user: User }) {
         })}
       </div>
     </Shell>
+  );
+}
+
+/**
+ * Every publish snapshots a version (lib/content.ts) but until now there was no
+ * screen to see or use them - a bad edit had to be fixed by hand. Revert loads
+ * an old snapshot's content and republishes it as a NEW version rather than
+ * rewinding the version counter, so history stays linear and this itself
+ * becomes undoable the same way.
+ */
+function VersionHistory({
+  currentVersion,
+  onDone,
+  onReverted,
+}: {
+  currentVersion: number;
+  onDone: () => void;
+  onReverted: () => void;
+}) {
+  const [versions, setVersions] = useState<ContentDoc[] | null>(null);
+  const [confirmVersion, setConfirmVersion] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    void listVersions().then(setVersions);
+  }, []);
+
+  async function revert(doc: ContentDoc) {
+    setBusy(true);
+    setError("");
+    try {
+      // Bump from the CURRENT live version, not the snapshot's own stale
+      // version number - otherwise this could collide with a version that
+      // already exists if other edits happened since the snapshot was taken.
+      await saveContent({ ...doc, version: currentVersion });
+      onReverted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Revert failed.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-12 safe-top md:px-6">
+      <header className="pt-3 pb-4">
+        <button type="button" onClick={onDone} className="text-sm font-semibold text-brand">
+          ← Manage content
+        </button>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight">Version history</h1>
+        <p className="text-sm text-muted">
+          Last {versions?.length ?? "…"} published versions. Reverting publishes
+          that content again as a new version.
+        </p>
+      </header>
+
+      {error && (
+        <p className="mb-3 rounded-xl border-2 border-physical bg-surface p-3 text-sm font-semibold text-physical">
+          {error}
+        </p>
+      )}
+
+      {versions === null && <p className="text-muted">Loading…</p>}
+
+      {versions !== null && versions.length === 0 && (
+        <p className="rounded-2xl border border-line bg-surface p-4 text-sm text-muted">
+          No version history yet - it starts after the first publish.
+        </p>
+      )}
+
+      <ul className="flex flex-col gap-2">
+        {versions?.map((v) => {
+          const isCurrent = v.version === currentVersion;
+          const date = new Date(v.updatedAt).toLocaleString(undefined, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          });
+          return (
+            <li
+              key={v.version}
+              className="flex items-center justify-between gap-3 rounded-2xl border border-line p-3"
+            >
+              <div>
+                <p className="font-semibold">
+                  Version {v.version}
+                  {isCurrent && (
+                    <span className="ml-2 rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">
+                      Current
+                    </span>
+                  )}
+                </p>
+                <p className="text-sm text-muted">
+                  {date} · {v.subSkills.length} sub-skills
+                </p>
+              </div>
+              {!isCurrent && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmVersion(v.version)}
+                  className="h-10 shrink-0 rounded-xl border-2 border-line px-3 text-sm font-semibold"
+                >
+                  Revert
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      {confirmVersion !== null && versions && (
+        <div className="mt-4 rounded-2xl border-2 border-developing bg-surface p-4">
+          <p className="font-semibold">
+            Publish version {confirmVersion} as the new current content?
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            Coaches will see this on their next launch, replacing what is live now.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                const doc = versions.find((v) => v.version === confirmVersion);
+                if (doc) void revert(doc);
+              }}
+              className="h-11 flex-1 rounded-xl bg-brand font-semibold text-white disabled:opacity-60"
+            >
+              {busy ? "Reverting…" : "Revert"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmVersion(null)}
+              className="h-11 flex-1 rounded-xl border-2 border-line font-semibold"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </main>
   );
 }
 

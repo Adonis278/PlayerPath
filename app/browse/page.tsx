@@ -7,7 +7,8 @@ import { useSearchParams } from "next/navigation";
 import { useContentDoc } from "@/components/ContentProvider";
 import { SkillRow } from "@/components/SkillRow";
 import { byPillar } from "@/lib/content";
-import { currentPlayerStore } from "@/lib/current-player";
+import { currentPlayerIdStore } from "@/lib/current-player";
+import { findPlayer, playerDisplayName, rosterStore } from "@/lib/roster";
 import { scoreFor, scoreStore } from "@/lib/scores";
 import { PILLARS, PILLAR_META, type Pillar } from "@/lib/types";
 
@@ -89,14 +90,20 @@ function PillarView({ pillar }: { pillar: Pillar }) {
     scoreStore.getSnapshot,
     scoreStore.getServerSnapshot,
   );
-  const player = useSyncExternalStore(
-    currentPlayerStore.subscribe,
-    currentPlayerStore.getSnapshot,
-    currentPlayerStore.getServerSnapshot,
+  const playerId = useSyncExternalStore(
+    currentPlayerIdStore.subscribe,
+    currentPlayerIdStore.getSnapshot,
+    currentPlayerIdStore.getServerSnapshot,
   );
+  const roster = useSyncExternalStore(
+    rosterStore.subscribe,
+    rosterStore.getSnapshot,
+    rosterStore.getServerSnapshot,
+  );
+  const player = findPlayer(roster, playerId);
   const meta = PILLAR_META[pillar];
   const skills = byPillar(content, pillar);
-  const rated = skills.filter((s) => scoreFor(scores, s.id, player)).length;
+  const rated = skills.filter((s) => scoreFor(scores, s.id, playerId)).length;
 
   return (
     <main className="flex-1 pb-8">
@@ -133,9 +140,9 @@ function PillarView({ pillar }: { pillar: Pillar }) {
       </header>
 
       <div className="px-4 pt-4 md:px-6 md:pt-6">
-        {player.trim() && (
+        {player && (
           <p className="mb-2 text-sm text-muted">
-            {rated} of {skills.length} assessed for {player.trim()}
+            {rated} of {skills.length} assessed for {playerDisplayName(player)}
           </p>
         )}
         <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
@@ -143,7 +150,7 @@ function PillarView({ pillar }: { pillar: Pillar }) {
             <SkillRow
               key={s.id}
               skill={s}
-              rating={scoreFor(scores, s.id, player)?.rating}
+              rating={scoreFor(scores, s.id, playerId)?.rating}
               showPillar={false}
             />
           ))}

@@ -9,11 +9,13 @@ import { createStore } from "./store";
  * Assessments never leave the device. No account, no server, no upload.
  *
  * That is what lets v1 skip the privacy review the BRD defers in 3.2.3: nothing
- * identifying about a child is transmitted or retained anywhere we control. The
- * player label is optional and the UI suggests a jersey number over a name.
+ * identifying about a child is transmitted or retained anywhere we control.
+ * Scores reference a roster player id (lib/roster.ts) rather than a name or
+ * jersey number directly, so a coach can add or edit a player's name later
+ * without fracturing that player's existing ratings.
  */
 
-const KEY = "playerpath.scores.v1";
+const KEY = "playerpath.scores.v2";
 
 function read(): Score[] {
   if (typeof window === "undefined") return [];
@@ -45,26 +47,21 @@ const NO_SCORES: Score[] = [];
 /** Subscribe with useSyncExternalStore; see lib/store.ts for why. */
 export const scoreStore = createStore<Score[]>(listScores, NO_SCORES);
 
-function normaliseLabel(label?: string): string | undefined {
-  return label?.trim() || undefined;
-}
-
 /**
- * Records or updates one assessment. Re-scoring the same player on the same skill
- * replaces rather than stacks - a coach correcting themselves should not leave two
- * conflicting records behind.
+ * Records or updates one assessment. Re-scoring the same player on the same
+ * skill replaces rather than stacks - a coach correcting themselves should not
+ * leave two conflicting records behind.
  */
 export function upsertScore(input: {
   subSkillId: string;
   rating: Rating;
   evidence?: string;
   priority?: Priority;
-  playerLabel?: string;
+  playerId?: string;
 }): Score {
-  const label = normaliseLabel(input.playerLabel);
   const scores = read();
   const existing = scores.find(
-    (s) => s.subSkillId === input.subSkillId && s.playerLabel === label,
+    (s) => s.subSkillId === input.subSkillId && s.playerId === input.playerId,
   );
 
   const entry: Score = {
@@ -73,7 +70,7 @@ export function upsertScore(input: {
     rating: input.rating,
     evidence: input.evidence?.trim() || undefined,
     priority: input.priority,
-    playerLabel: label,
+    playerId: input.playerId,
     at: new Date().toISOString(),
   };
 
@@ -86,11 +83,8 @@ export function upsertScore(input: {
  * real state, not a zero - so unrating removes the record entirely rather than
  * storing a sentinel value that would drag averages down.
  */
-export function clearRating(subSkillId: string, playerLabel?: string) {
-  const label = normaliseLabel(playerLabel);
-  write(
-    read().filter((s) => !(s.subSkillId === subSkillId && s.playerLabel === label)),
-  );
+export function clearRating(subSkillId: string, playerId?: string) {
+  write(read().filter((s) => !(s.subSkillId === subSkillId && s.playerId === playerId)));
 }
 
 export function removeScore(id: string) {
@@ -104,22 +98,36 @@ export function clearScores() {
 export function scoreFor(
   scores: Score[],
   subSkillId: string,
-  playerLabel?: string,
+  playerId?: string,
 ): Score | undefined {
-  const label = normaliseLabel(playerLabel);
-  return scores.find((s) => s.subSkillId === subSkillId && s.playerLabel === label);
+  return scores.find((s) => s.subSkillId === subSkillId && s.playerId === playerId);
 }
 
-/** Every distinct player label present, most recently assessed first. */
-export function listPlayers(scores: Score[]): string[] {
+/** Every distinct player id present, most recently assessed first. */
+export function listScoredPlayerIds(scores: Score[]): string[] {
   const seen = new Map<string, string>();
   for (const s of scores) {
-    const key = s.playerLabel ?? "";
+    const key = s.playerId ?? "";
     if (!seen.has(key) || s.at > seen.get(key)!) seen.set(key, s.at);
   }
   return Array.from(seen.entries())
     .sort((a, b) => b[1].localeCompare(a[1]))
-    .map(([label]) => label);
+    .map(([id]) => id);
+}
+
+/** Groups scores by player id, most recently scored player first. */
+export function groupByPlayer(scores: Score[]): { playerId?: string; scores: Score[] }[] {
+  const groups = new Map<string, Score[]>();
+  for (const s of scores) {
+    const key = s.playerId ?? "";
+    const list = groups.get(key) ?? [];
+    list.push(s);
+    groups.set(key, list);
+  }
+  return Array.from(groups, ([key, list]) => ({
+    playerId: key || undefined,
+    scores: list,
+  }));
 }
 
 /* ---------------- assessment summary ---------------- */
@@ -132,7 +140,7 @@ export type PillarSummary = {
 };
 
 export type Assessment = {
-  playerLabel: string;
+  playerId?: string;
   scores: Score[];
   /** Mean of observed ratings only. Null when nothing has been observed. */
   overallAverage: number | null;
@@ -150,12 +158,12 @@ function mean(values: number[]): number | null {
 }
 
 /**
- * Bands an average into a level. Nearest, but exact ties round DOWN.
+ * Rounds an average to the nearest level band, but exact ties round DOWN.
  *
  * Math.round would send 2.5 up to Consistent. The workbook is explicit that a 3
  * or 4 should be seen repeatedly and that Consistent is already a strong outcome,
  * so a profile sitting exactly between two bands should not be credited with the
- * higher one. Floor was the alternative, but it would under-report a 3.9.
+ * higher one.
  */
 export function levelFromAverage(avg: number | null): Rating | null {
   if (avg === null) return null;
@@ -165,10 +173,9 @@ export function levelFromAverage(avg: number | null): Rating | null {
 export function buildAssessment(
   content: ContentDoc,
   allScores: Score[],
-  playerLabel?: string,
+  playerId?: string,
 ): Assessment {
-  const label = normaliseLabel(playerLabel);
-  const scores = allScores.filter((s) => s.playerLabel === label);
+  const scores = allScores.filter((s) => s.playerId === playerId);
   const byId = new Map(scores.map((s) => [s.subSkillId, s]));
 
   const pillars: PillarSummary[] = PILLARS.map((pillar) => {
@@ -187,7 +194,7 @@ export function buildAssessment(
   const overallAverage = mean(scores.map((s) => s.rating));
 
   return {
-    playerLabel: label ?? "Unlabelled",
+    playerId,
     scores,
     overallAverage,
     overallLevel: levelFromAverage(overallAverage),
@@ -203,7 +210,11 @@ export function buildAssessment(
 }
 
 /** Plain text for the share sheet - keeps the coach's data portable and theirs. */
-export function exportAsText(a: Assessment, content: ContentDoc): string {
+export function exportAsText(
+  a: Assessment,
+  content: ContentDoc,
+  playerDisplay: string,
+): string {
   if (a.scores.length === 0) return "No skills assessed yet.";
 
   const date = new Date().toLocaleDateString(undefined, {
@@ -213,7 +224,7 @@ export function exportAsText(a: Assessment, content: ContentDoc): string {
   });
 
   const lines = [
-    `PlayerPath assessment - ${a.playerLabel}`,
+    `PlayerPath assessment - ${playerDisplay}`,
     date,
     "",
     `Skills assessed: ${a.assessed} / ${a.total}`,

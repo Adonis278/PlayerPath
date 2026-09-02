@@ -3,6 +3,7 @@ import "./globals.css";
 import { ContentProvider } from "@/components/ContentProvider";
 import { BottomNav, SideNav } from "@/components/AppNav";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { Onboarding } from "@/components/Onboarding";
 
 export const metadata: Metadata = {
   title: "PlayerPath",
@@ -56,6 +57,7 @@ export default function RootLayout({
               <BottomNav />
             </div>
           </div>
+          <Onboarding />
         </ContentProvider>
         <ServiceWorker />
       </body>

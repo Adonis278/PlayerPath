@@ -8,6 +8,7 @@ import { SkillRow } from "@/components/SkillRow";
 import { searchSubSkills } from "@/lib/search";
 import { findSubSkill, pillarCounts } from "@/lib/content";
 import { recentsStore } from "@/lib/recents";
+import { requestOnboarding } from "@/lib/onboarding";
 import { PILLARS, PILLAR_META } from "@/lib/types";
 
 /**
@@ -48,6 +49,13 @@ export default function HomePage() {
           <span className="hidden md:inline">Find a skill</span>
         </h1>
         <p className="text-sm text-muted">Coaching and assessment, ages 9-12</p>
+        <button
+          type="button"
+          onClick={requestOnboarding}
+          className="mt-1 text-sm font-semibold text-brand"
+        >
+          How this works
+        </button>
       </header>
 
       <div className="relative md:max-w-xl">

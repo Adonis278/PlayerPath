@@ -8,7 +8,8 @@ import { SkillIcon } from "@/components/SkillIcon";
 import { PlayerField } from "@/components/PlayerField";
 import { findSubSkill } from "@/lib/content";
 import { pushRecent } from "@/lib/recents";
-import { currentPlayerStore } from "@/lib/current-player";
+import { currentPlayerIdStore } from "@/lib/current-player";
+import { SquadRate } from "@/components/SquadRate";
 import { clearRating, scoreFor, scoreStore, upsertScore } from "@/lib/scores";
 import {
   LEVELS,
@@ -19,6 +20,7 @@ import {
   SCORING_RULES,
   type Priority,
   type Rating,
+  type Score,
   type SubSkill,
 } from "@/lib/types";
 
@@ -216,10 +218,11 @@ function CoachTab({ skill, accent }: { skill: SubSkill; accent: string }) {
 /* ---------------- Assess ---------------- */
 
 function AssessTab({ skill }: { skill: SubSkill }) {
-  const player = useSyncExternalStore(
-    currentPlayerStore.subscribe,
-    currentPlayerStore.getSnapshot,
-    currentPlayerStore.getServerSnapshot,
+  const [mode, setMode] = useState<"player" | "squad">("player");
+  const playerId = useSyncExternalStore(
+    currentPlayerIdStore.subscribe,
+    currentPlayerIdStore.getSnapshot,
+    currentPlayerIdStore.getServerSnapshot,
   );
   const scores = useSyncExternalStore(
     scoreStore.subscribe,
@@ -229,11 +232,71 @@ function AssessTab({ skill }: { skill: SubSkill }) {
 
   // Derived from the store, so switching skill or player needs no effect to
   // resynchronise - the right answer falls out of the current render.
-  const existing = scoreFor(scores, skill.id, player);
+  const existing = scoreFor(scores, skill.id, playerId);
   const rating = existing?.rating ?? null;
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-5 lg:px-0">
+      {/*
+        Two real coaching workflows, not one screen forced to serve both: one
+        player through many skills (Player), or one skill across the whole
+        squad while a drill is fresh (Squad).
+      */}
+      <div role="tablist" aria-label="Assess mode" className="flex gap-2">
+        <ModePill active={mode === "player"} onClick={() => setMode("player")}>
+          This player
+        </ModePill>
+        <ModePill active={mode === "squad"} onClick={() => setMode("squad")}>
+          Squad
+        </ModePill>
+      </div>
+
+      {mode === "squad" ? (
+        <SquadRate subSkillId={skill.id} />
+      ) : (
+        <PlayerAssess skill={skill} playerId={playerId} existing={existing} rating={rating} />
+      )}
+    </div>
+  );
+}
+
+function ModePill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`h-10 flex-1 rounded-xl text-sm font-bold ${
+        active ? "bg-brand text-white" : "bg-surface text-muted"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PlayerAssess({
+  skill,
+  playerId,
+  existing,
+  rating,
+}: {
+  skill: SubSkill;
+  playerId: string;
+  existing: Score | undefined;
+  rating: Rating | null;
+}) {
+  return (
+    <>
       <PlayerField />
       <ScoringRules />
 
@@ -258,7 +321,7 @@ function AssessTab({ skill }: { skill: SubSkill }) {
                       rating: value,
                       evidence: existing?.evidence,
                       priority: existing?.priority,
-                      playerLabel: player,
+                      playerId: playerId || undefined,
                     })
                   }
                   aria-pressed={active}
@@ -304,7 +367,7 @@ function AssessTab({ skill }: { skill: SubSkill }) {
         */}
         <button
           type="button"
-          onClick={() => clearRating(skill.id, player)}
+          onClick={() => clearRating(skill.id, playerId || undefined)}
           disabled={rating === null}
           className="mt-2.5 h-12 w-full rounded-2xl border-2 border-dashed border-line text-sm font-semibold text-muted disabled:opacity-50"
         >
@@ -313,26 +376,26 @@ function AssessTab({ skill }: { skill: SubSkill }) {
       </section>
 
       {existing && (
-        <EvidenceAndPriority skill={skill} player={player} existing={existing} />
+        <EvidenceAndPriority skill={skill} playerId={playerId || undefined} existing={existing} />
       )}
-    </div>
+    </>
   );
 }
 
 function EvidenceAndPriority({
   skill,
-  player,
+  playerId,
   existing,
 }: {
   skill: SubSkill;
-  player: string;
+  playerId: string | undefined;
   existing: { rating: Rating; evidence?: string; priority?: Priority };
 }) {
   const [evidence, setEvidence] = useState(existing.evidence ?? "");
 
   // Keep the textarea in step when the coach switches player or skill, without
   // an effect: adjust during render when the identity key changes.
-  const key = `${skill.id}|${player}`;
+  const key = `${skill.id}|${playerId ?? ""}`;
   const [lastKey, setLastKey] = useState(key);
   if (lastKey !== key) {
     setLastKey(key);
@@ -345,7 +408,7 @@ function EvidenceAndPriority({
       rating: existing.rating,
       evidence: "evidence" in patch ? patch.evidence : evidence,
       priority: "priority" in patch ? patch.priority : existing.priority,
-      playerLabel: player,
+      playerId,
     });
 
   return (
